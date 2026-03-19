@@ -1,0 +1,21 @@
+<tr class="task-row">
+    <td colspan="3">
+        <form hx-post="{% url 'core:task_edit' task.pk %}" 
+              hx-target="closest .task-row" 
+              hx-swap="outerHTML" 
+              class="d-flex gap-2">
+            {% csrf_token %}
+            <input type="text" 
+                   name="title" 
+                   value="{{ task.title }}" 
+                   class="form-control form-control-sm" 
+                   autofocus>
+            
+            <button type="submit" class="btn btn-success btn-sm">Save</button>
+            
+            <button hx-get="{% url 'core:dashboard' %}" 
+                    hx-target="closest .task-row" 
+                    class="btn btn-light btn-sm">Cancel</button>
+        </form>
+    </td>
+</tr>

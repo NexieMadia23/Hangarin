@@ -1,0 +1,11 @@
+<div class="p-6 text-center">
+    <h3 class="text-lg font-black text-[#FF0000] mb-2">Delete Task?</h3>
+    <p class="text-sm text-slate-500 mb-6">Are you sure you want to delete "{{ task.title }}"? This cannot be undone.</p>
+    <form hx-post="{% url 'task_delete' task.pk %}">
+        {% csrf_token %}
+        <div class="flex justify-center space-x-4">
+            <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-100 rounded-full font-bold">No, Keep it</button>
+            <button type="submit" class="px-4 py-2 bg-[#FF0000] text-white rounded-full font-bold">Yes, Delete</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,13 @@
+<button hx-post="{% url 'core:toggle_status' task.pk %}" 
+        hx-target="closest tr" 
+        hx-swap="outerHTML"
+        class="h-9 w-36 inline-flex items-center justify-center px-4 rounded-md text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm text-white
+        {% if task.status == 'Done' %} 
+            bg-[#00c875] hover:bg-[#00ae65]
+        {% elif task.status == 'Working on it' %} 
+            bg-[#fdab3d] hover:bg-[#e69b37]
+        {% else %} 
+            bg-[#e2445c] hover:bg-[#c93a4f]
+        {% endif %}">
+    {{ task.status }}
+</button>
