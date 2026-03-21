@@ -1,23 +1,54 @@
-# 🚀 Hangarin Pro | Task Roadmap
+# 🚀 Hangarin Pro Workspace
+**Modern Task Orchestration | High-Velocity Productivity**
 
-A high-velocity, Monday.com-inspired task management dashboard built with **Django 5.0**, **HTMX**, and **Tailwind CSS**.
+Hangarin is a high-performance dashboard designed for teams who value aesthetic clarity and real-time efficiency. Built with a **Glassmorphism UI**, it provides a seamless experience for tracking roadmaps and managing complex workflows.
+
+---
 
 ## ✨ Key Features
-* **Live Search & Filters:** Real-time task filtering using HTMX (no page reloads).
-* **Dynamic Board Progress:** Visual progress bar that updates as you complete tasks.
-* **Focus Mode:** A "Critical Path" view to highlight urgent blockers and high-priority quests.
-* **Color-Coded Categories:** Fully dynamic categories with custom hex-code branding.
-* **Responsive Modals:** Clean, animated task creation and editing suite.
 
-## 🛠️ Tech Stack
-* **Backend:** Python / Django
-* **Frontend:** Tailwind CSS (Modern UI)
-* **Interactivity:** HTMX (AJAX-driven updates)
-* **Database:** SQLite (Local Development)
+* **⚡ Real-Time Interaction:** Powered by **HTMX** for instant updates without page refreshes.
+* **🎨 Dynamic Design:** Priority colors and Category tags are managed directly from the Django Admin.
+* **🔍 Focus Mode:** A distraction-free toggle to highlight your most critical tasks.
+* **📊 Velocity Tracking:** Automated progress bars that calculate your project completion percentage.
+* **📁 Task Intelligence:** Integrated sidebar for subtasks, notes, and quick-edit functionality.
 
-## 🚀 Quick Start
+---
 
-1. **Clone the repo:**
-   ```bash
-   git clone [https://github.com/NexieMadia23/Hangarin](https://github.com/NexieMadia23/Hangarin)
-   cd Hangarin
+## 🔐 Administrative Access
+
+Manage your priorities, users, and categories through the secure portal. Use these credentials for the initial setup:
+
+| Field | Detail |
+| :--- | :--- |
+| **Admin URL** | `http://127.0.0.1:8000/admin` |
+| **Username** | `Nexie` |
+| **Password** | `nexyness23` |
+
+> **Pro Tip:** Use the **Priority** section in the Admin to change HEX colors. The dashboard automatically applies a **15% opacity tint** to your chosen color for a professional UI look.
+
+---
+
+## 🚀 Launch & Installation
+
+Follow these steps to get your local development environment running:
+
+### 1. Setup Environment
+```bash
+# Clone the repository
+git clone [https://github.com/NexieMadia23/Hangarin](https://github.com/NexieMadia23/Hangarin)
+cd hangarin-workspace
+
+# Create and activate virtual environment
+python -m venv venv
+# Windows: venv\Scripts\activate | Mac: source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+
+# Apply migrations to set up the database
+python manage.py migrate
+
+# Start the development server
+python manage.py runserver
