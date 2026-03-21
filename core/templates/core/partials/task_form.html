@@ -1,79 +1,55 @@
-<div class="p-8 max-w-4xl mx-auto">
-    <div class="flex justify-between items-center mb-8">
+<div class="p-8 {% if task %}max-w-5xl{% else %}max-w-xl{% endif %} mx-auto bg-white rounded-3xl">
+    <div class="flex justify-between items-center mb-10">
         <div>
-            <h3 class="text-2xl font-black text-slate-800 tracking-tight">{{ title|default:"Manage Task" }}</h3>
-            <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Hangarin Task Manager</p>
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight">
+                {% if task %}Edit <span class="text-[#00c875]">Task</span>{% else %}Create <span class="text-[#00c875]">New Task</span>{% endif %}
+            </h3>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-1">Hangarin Professional Workspace</p>
         </div>
-        <button type="button" onclick="closeModal()" class="text-slate-300 hover:text-slate-600 transition-all text-3xl">&times;</button>
+        <button type="button" onclick="closeModal()" class="text-slate-300 hover:text-rose-500 transition-all text-4xl">&times;</button>
     </div>
 
-    <div class="grid {% if task %}grid-cols-1 lg:grid-cols-5{% else %}grid-cols-1{% endif %} gap-10">
+    <div class="grid {% if task %}grid-cols-1 lg:grid-cols-5{% else %}grid-cols-1{% endif %} gap-12">
         
         <div class="{% if task %}lg:col-span-3{% endif %} space-y-6">
-            <form hx-post="{{ request.path }}" 
-                  hx-target="#task-table-body" 
-                  hx-swap="innerHTML"
-                  class="space-y-5">
+            <form hx-post="{{ request.path }}" hx-target="#task-table-body" class="space-y-6">
                 {% csrf_token %}
                 
-                <div class="space-y-4">
+                <div class="space-y-5">
                     {% for field in form %}
-                        <div class="flex flex-col space-y-1">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1" for="{{ field.id_for_label }}">
+                        <div class="flex flex-col space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1" for="{{ field.id_for_label }}">
                                 {{ field.label }}
                             </label>
                             
                             {% if field.name == 'description' %}
                                 <textarea name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                    placeholder="Add more details about this task..."
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all min-h-[120px] resize-none">{{ field.value|default_if_none:"" }}</textarea>
+                                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm text-slate-700 focus:bg-white focus:border-[#00c875] outline-none transition-all min-h-[140px] resize-none shadow-sm">{{ field.value|default_if_none:"" }}</textarea>
                             
                             {% elif field.name == 'status' or field.name == 'priority' or field.name == 'category' %}
                                 <div class="relative group">
                                     <select name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all cursor-pointer appearance-none block">
+                                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 focus:bg-white focus:border-[#00c875] outline-none transition-all cursor-pointer appearance-none block shadow-sm">
                                         {% for value, label in field.field.choices %}
-                                            {% if value %} 
-                                                <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
-                                                    {{ label }}
-                                                </option>
-                                            {% endif %}
+                                            <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
                                         {% endfor %}
                                     </select>
-                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                                    </div>
+                                    <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                 </div>
-
-                            {% elif field.name == 'deadline' %}
-                                <input type="datetime-local" name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                    value="{{ field.value|date:'Y-m-d\TH:i' }}"
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all">
 
                             {% else %}
                                 <input type="{{ field.field.widget.input_type|default:'text' }}" 
                                     name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                    placeholder="Enter {{ field.label|lower }}..."
                                     value="{{ field.value|default_if_none:'' }}"
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all">
-                            {% endif %}
-                            
-                            {% if field.errors %}
-                                <p class="text-[10px] text-rose-500 font-bold mt-1 ml-1 flex items-center gap-1">
-                                    <i class="fa-solid fa-circle-exclamation"></i> {{ field.errors.0 }}
-                                </p>
+                                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 focus:bg-white focus:border-[#00c875] outline-none transition-all shadow-sm">
                             {% endif %}
                         </div>
                     {% endfor %}
                 </div>
 
-                <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end items-center space-x-4">
-                    <button type="button" onclick="closeModal()" 
-                        class="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors px-2">
-                        Discard
-                    </button>
-                    <button type="submit" 
-                        class="bg-[#00c875] hover:bg-[#00b469] text-white px-10 py-3 rounded-xl font-bold shadow-lg shadow-green-100 transition-all active:scale-95 text-sm uppercase tracking-wider">
+                <div class="mt-10 pt-8 border-t border-slate-100 flex justify-end items-center space-x-4">
+                    <button type="button" onclick="closeModal()" class="text-xs font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest">Discard</button>
+                    <button type="submit" class="bg-[#00c875] hover:bg-[#00b469] text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-green-100 transition-all active:scale-95 text-xs uppercase tracking-[0.2em]">
                         Save Changes
                     </button>
                 </div>
@@ -81,50 +57,42 @@
         </div>
 
         {% if task %}
-        <div class="lg:col-span-2 space-y-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-            
-            <div id="subtask-container">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Goal Breakdown</p>
-                <div id="subtask-list" class="space-y-2 mb-4">
+        <div class="lg:col-span-2 space-y-10">
+            <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-inner">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 px-2">Goal Breakdown</p>
+                <div id="subtask-list" class="space-y-3 mb-6">
                     {% for sub in task.subtasks.all %}
-                        <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 group">
+                        <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                             <span class="text-xs font-bold text-slate-600">{{ sub.title }}</span>
-                            <span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">{{ sub.status }}</span>
+                            <span class="text-[8px] px-2 py-1 rounded-md bg-[#00c875]/10 text-[#00c875] uppercase font-black">{{ sub.status }}</span>
                         </div>
-                    {% empty %}
-                        <p class="text-xs text-slate-400 italic">No subtasks yet.</p>
                     {% endfor %}
                 </div>
                 
                 <form hx-post="{% url 'core:add_subtask' task.pk %}" hx-target="#subtask-list" class="flex gap-2">
                     {% csrf_token %}
-                    <input type="text" name="subtask_title" placeholder="Add subtask..." 
-                           class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-green-500/20 outline-none">
-                    <button type="submit" class="bg-slate-800 text-white p-2 rounded-lg hover:bg-slate-700 transition">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                    </button>
+                    <input type="text" name="subtask_title" placeholder="+ Add Step" 
+                           class="flex-1 bg-white border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:border-[#00c875]">
+                    <button type="submit" class="bg-slate-800 text-white px-4 rounded-xl hover:bg-black transition-all"><i class="fa-solid fa-plus text-xs"></i></button>
                 </form>
             </div>
 
-            <div id="note-container">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Notes</p>
-                <div id="note-list" class="space-y-3 mb-4">
+            <div class="bg-amber-50/50 p-6 rounded-[2rem] border border-amber-100 shadow-inner">
+                <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-6 px-2">Strategic Notes</p>
+                <div id="note-list" class="space-y-3 mb-6">
                     {% for note in task.notes.all %}
-                        <div class="bg-amber-50 p-3 rounded-lg border-l-4 border-amber-300">
-                            <p class="text-xs text-amber-800 leading-relaxed">{{ note.content }}</p>
-                            <span class="text-[9px] text-amber-500 mt-1 block">{{ note.created_at|date:"M d, H:i" }}</span>
+                        <div class="bg-white p-4 rounded-2xl border-l-4 border-amber-300 shadow-sm">
+                            <p class="text-xs text-slate-600 font-medium leading-relaxed">{{ note.content }}</p>
                         </div>
-                    {% empty %}
-                        <p class="text-xs text-slate-400 italic">No notes added.</p>
                     {% endfor %}
                 </div>
 
                 <form hx-post="{% url 'core:add_note' task.pk %}" hx-target="#note-list" class="space-y-2">
                     {% csrf_token %}
-                    <textarea name="note_content" placeholder="Quick note..." 
-                              class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-green-500/20 outline-none resize-none h-20"></textarea>
-                    <button type="submit" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 rounded-lg text-[10px] uppercase transition">
-                        Save Note
+                    <textarea name="note_content" placeholder="Quick thought..." 
+                              class="w-full bg-white border-2 border-slate-100 rounded-xl px-4 py-3 text-xs outline-none focus:border-amber-400 h-20 resize-none font-medium transition-all"></textarea>
+                    <button type="submit" class="w-full bg-amber-200 hover:bg-amber-300 text-amber-800 font-black py-2.5 rounded-xl text-[9px] uppercase tracking-widest transition-all">
+                        Post Note
                     </button>
                 </form>
             </div>

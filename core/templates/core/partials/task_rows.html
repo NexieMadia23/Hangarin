@@ -1,15 +1,17 @@
 {% for task in tasks %}
-<tr class="task-row hover:bg-slate-50/50 transition-all border-b border-slate-100 group 
-    {% if task.status == 'Completed' %} bg-emerald-50/30 {% endif %}" id="task-{{ task.id }}">
+<tr class="task-row group hover:bg-slate-50/80 transition-all border-b border-slate-100 bg-white" 
+    id="task-{{ task.id }}">
     
-    <td class="p-4 border-l-[6px] align-middle border-r border-slate-50
+    <td class="p-4 border-l-[6px] align-middle border-r border-slate-50 cursor-pointer
         {% if task.status == 'Completed' %} border-l-[#00c875] 
         {% elif task.status == 'In Progress' %} border-l-[#fdab3d] 
-        {% elif task.status == 'Pending' %} border-l-[#c4c4c4] 
-        {% else %} border-l-slate-300 {% endif %}">
+        {% else %} border-l-[#c4c4c4] {% endif %}"
+        hx-get="{% url 'core:task_detail_sidebar' task.pk %}"
+        hx-target="#task-detail-sidebar"
+        hx-swap="innerHTML transition:true">
         
-        <div class="font-bold tracking-tight leading-tight transition-all
-            {% if task.status == 'Completed' %} text-slate-400 line-through {% else %} text-slate-800 {% endif %}">
+        <div class="font-bold tracking-tight leading-tight transition-all text-slate-800
+            {% if task.status == 'Completed' %} text-slate-400 line-through {% else %} group-hover:text-[#00c875] {% endif %}">
             {{ task.title }}
         </div>
 
@@ -23,10 +25,6 @@
                 <span class="px-2 py-0.5 rounded border transition-all"
                       style="background-color: {{ task.category.color }}15; color: {{ task.category.color }}; border-color: {{ task.category.color }}30;">
                     {{ task.category.name }}
-                </span>
-                {% else %}
-                <span class="px-2 py-0.5 rounded border border-slate-200 bg-slate-50 text-slate-400">
-                    GENERAL
                 </span>
                 {% endif %}
 
@@ -47,7 +45,7 @@
 
     <td class="p-4 w-44 text-center align-middle border-r border-slate-50">
         <button hx-post="{% url 'core:toggle_status' task.pk %}" 
-                hx-target="closest tr" 
+                hx-target="#task-{{ task.id }}" 
                 hx-swap="outerHTML"
                 class="h-9 w-36 inline-flex items-center justify-center px-4 rounded-md text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm text-white
                 {% if task.status == 'Completed' %} bg-[#00c875] hover:bg-[#00ae65] shadow-[0_0_15px_rgba(0,200,117,0.2)]
@@ -63,22 +61,23 @@
     </td>
 
     <td class="p-4 w-32 text-center align-middle border-r border-slate-50">
-        <div class="h-8 inline-flex items-center px-3 text-[10px] font-black uppercase tracking-widest rounded border-2
-            {% if task.status == 'Completed' %} border-slate-100 text-slate-300 bg-slate-50/50
-            {% elif task.priority.name == 'High' %} border-rose-100 text-rose-600 bg-rose-50
-            {% elif task.priority.name == 'Medium' %} border-amber-100 text-amber-600 bg-amber-50
-            {% else %} border-emerald-100 text-emerald-600 bg-emerald-50 {% endif %}">
+        <div class="h-8 inline-flex items-center px-3 text-[10px] font-black uppercase tracking-widest rounded border-2 transition-all"
+            {% if task.status == 'Completed' %}
+                style="border-color: #f1f5f9; text-color: #cbd5e1; background-color: #f8fafc;"
+            {% else %}
+                style="border-color: {{ task.priority.color }}40; color: {{ task.priority.color }}; background-color: {{ task.priority.color }}10;"
+            {% endif %}>
             {{ task.priority.name|default:"Low" }}
         </div>
     </td>
 
     <td class="p-4 w-[280px] align-middle">
-        <div class="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div class="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
             
             <button hx-get="{% url 'core:task_edit' task.pk %}?inline=true" 
-                    hx-target="closest tr" 
+                    hx-target="#task-{{ task.id }}" 
                     hx-swap="outerHTML"
-                    class="h-8 w-8 flex items-center justify-center bg-slate-100 text-slate-500 rounded-lg hover:bg-indigo-600 hover:text-white transition-all"
+                    class="h-9 w-9 flex items-center justify-center bg-slate-100 text-slate-500 rounded-lg hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
                     title="Quick Edit">
                 <i class="fa-solid fa-bolt text-xs"></i>
             </button>
@@ -86,14 +85,13 @@
             <button hx-get="{% url 'core:task_edit' task.pk %}" 
                     hx-target="#modal-content" 
                     hx-swap="innerHTML"
-                    onclick="openModal()"
                     class="h-9 px-4 inline-flex items-center bg-slate-800 text-white text-[11px] font-black uppercase rounded-lg shadow-sm hover:bg-black transition-all">
                 Full Edit
             </button>
 
             <button hx-delete="{% url 'core:task_delete' task.pk %}" 
                     hx-confirm="Delete this task?" 
-                    hx-target="closest tr" 
+                    hx-target="#task-{{ task.id }}" 
                     hx-swap="outerHTML"
                     class="h-9 px-4 inline-flex items-center border-2 border-slate-200 bg-white text-slate-500 text-[11px] font-black uppercase rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-all">
                 <i class="fa-solid fa-trash"></i>
@@ -108,6 +106,7 @@
         <div class="flex flex-col items-center text-slate-300">
             <i class="fa-solid fa-clipboard-list text-5xl mb-4"></i>
             <p class="font-bold uppercase text-xs tracking-widest">No tasks found</p>
+            <button hx-get="{% url 'core:task_list' %}" hx-target="#task-table-body" class="mt-4 text-indigo-500 text-[10px] font-black hover:underline">RESET VIEW</button>
         </div>
     </td>
 </tr>

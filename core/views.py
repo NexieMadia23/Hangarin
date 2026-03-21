@@ -6,69 +6,74 @@ from django.db.models import Q, Count
 from .models import Task, Category, SubTask, Note 
 from .forms import TaskForm
 
+# --- Dashboard & Sidebar ---
+
 def task_list(request):
-    """Main dashboard with synchronized Quick Filters and Progress Bar."""
-    # Start with all tasks and use select_related to speed up the database
+    """Main dashboard with synchronized Quick Filters, Progress Bar, and Single-Row fetch."""
     tasks = Task.objects.all().select_related('category', 'priority').order_by('-created_at')
     categories = Category.objects.annotate(task_count=Count('tasks'))
     
-    # 1. Grab filters (FIXED: Defined these before using them)
+    # 1. NEW: Single-Row Fetch (Handles the "Cancel" button or single row refresh)
+    task_id = request.GET.get('id')
+    if task_id:
+        task = get_object_or_404(Task, id=task_id)
+        return render(request, 'core/partials/task_rows.html', {'tasks': [task]})
+
+    # 2. Filtering Logic
     status_filter = request.GET.get('status')
     category_filter = request.GET.get('category')
     focus_mode = request.GET.get('focus') == 'true'
     search_query = request.GET.get('q') 
     
-    # 2. Filtering Logic
     if focus_mode:
         today = timezone.now().date()
-        # Look for "High" or "Critical" in priority OR overdue tasks
         tasks = tasks.filter(
             Q(priority__name__icontains='High') | 
             Q(priority__name__icontains='Critical') | 
             Q(deadline__date__lte=today)
         ).exclude(status__iexact='Completed').distinct()
         
-        # FALLBACK: If Focus Mode is empty, show the 5 most recent incomplete tasks
         if not tasks.exists():
             tasks = Task.objects.exclude(status__iexact='Completed').select_related('category', 'priority').order_by('-created_at')[:5]
-
-    # Apply Standard Filters ONLY if NOT in focus mode
     else:
-        if status_filter:
-            tasks = tasks.filter(status__iexact=status_filter)
-        
-        if category_filter:
-            tasks = tasks.filter(category__name__iexact=category_filter)
+        if status_filter: tasks = tasks.filter(status__iexact=status_filter)
+        if category_filter: tasks = tasks.filter(category__name__iexact=category_filter)
             
-    # Search is applied regardless of Focus Mode
     if search_query:
         tasks = tasks.filter(title__icontains=search_query)
 
-    # 3. Progress Calculation (Safe for empty databases)
+    # 3. Global Progress (Calculated for the sidebar)
     total = Task.objects.count()
     done = Task.objects.filter(status__iexact='Completed').count()
     progress = int((done / total) * 100) if total > 0 else 0
 
     context = {
         'tasks': tasks, 
-        'categories': categories,
-        'progress': progress,
+        'categories': categories, 
+        'progress': progress, 
         'is_focus': focus_mode
     }
     
-    # 4. HTMX Request handling
-    if hasattr(request, 'htmx') and request.htmx:
+    if request.headers.get('HX-Request'):
         return render(request, 'core/partials/task_rows.html', context)
-        
     return render(request, 'core/dashboard.html', context)
 
-# --- Task Actions (Create, Edit, Delete, Toggle) ---
+
+def task_detail_sidebar(request, pk):
+    """Loads content into the Right Side Panel."""
+    task = get_object_or_404(Task, pk=pk)
+    return render(request, 'core/partials/task_detail_sidebar.html', {'task': task})
+
+
+# --- Task CRUD ---
 
 def task_create(request):
+    """Handles new task creation via Modal."""
     if request.method == "POST":
         form = TaskForm(request.POST)
         if form.is_valid():
             form.save()
+            # Send empty response to close modal, trigger list refresh
             response = HttpResponse("")
             response["HX-Trigger"] = "taskListChanged"
             return response
@@ -76,51 +81,103 @@ def task_create(request):
         form = TaskForm()
     return render(request, 'core/partials/task_form.html', {'form': form, 'title': 'New Task'})
 
+
 def task_edit(request, pk):
+    """Handles both Modal Edit and Inline (Quick) Edit."""
     task = get_object_or_404(Task, pk=pk)
+    is_inline = request.GET.get('inline') == 'true'
+
     if request.method == "POST":
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
-            form.save()
-            if request.GET.get('inline') == 'true':
-                return render(request, 'core/partials/task_rows.html', {'tasks': [task]})
+            task = form.save()
             
+            # If editing from the table directly (Inline)
+            if is_inline:
+                response = render(request, 'core/partials/task_rows.html', {'tasks': [task]})
+                response["HX-Trigger"] = "taskListChanged"
+                return response
+            
+            # If editing from the Modal
             response = HttpResponse("")
             response["HX-Trigger"] = "taskListChanged"
             return response
     else:
         form = TaskForm(instance=task)
-    
-    template = 'core/partials/task_edit_form.html' if request.GET.get('inline') == 'true' else 'core/partials/task_form.html'
+
+    # Use specific template for Inline Edit vs Full Modal Edit
+    template = 'core/partials/task_edit_form.html' if is_inline else 'core/partials/task_form.html'
     return render(request, template, {'form': form, 'task': task, 'title': 'Edit Task'})
+
 
 @require_POST
 def toggle_status(request, pk):
+    """Cycles task status and returns the single updated row."""
     task = get_object_or_404(Task, pk=pk)
     cycle = {'Pending': 'In Progress', 'In Progress': 'Completed', 'Completed': 'Pending'}
     task.status = cycle.get(task.status, 'Pending')
     task.save()
     
+    # Return just this row to avoid full table flicker
     response = render(request, 'core/partials/task_rows.html', {'tasks': [task]})
     response["HX-Trigger"] = "taskListChanged"
     return response
 
+
 @require_http_methods(["DELETE", "POST"])
 def task_delete(request, pk):
+    """Deletes task and triggers global UI update."""
     get_object_or_404(Task, pk=pk).delete()
     response = HttpResponse("") 
     response["HX-Trigger"] = "taskListChanged"
     return response
 
-# --- Subtasks & Notes ---
+
+# --- Subtasks (Real-time CRUD) ---
 
 @require_POST
 def add_subtask(request, task_pk):
-    task = get_object_or_404(Task, pk=task_pk)
+    task = get_object_or_404(Task, task_pk)
     title = request.POST.get('subtask_title')
     if title:
-        SubTask.objects.create(task=task, title=title, status='Pending')
+        SubTask.objects.create(task=task, title=title, is_completed=False)
     return render(request, 'core/partials/subtask_section.html', {'task': task})
+
+
+@require_POST
+def toggle_subtask(request, pk):
+    subtask = get_object_or_404(SubTask, pk=pk)
+    subtask.is_completed = not subtask.is_completed
+    subtask.save()
+    
+    task = subtask.task
+    total = task.subtasks.count()
+    done = task.subtasks.filter(is_completed=True).count()
+    progress = int((done / total) * 100) if total > 0 else 0
+    
+    response = render(request, 'core/partials/progress_bar.html', {'progress': progress})
+    response["HX-Trigger"] = "taskListChanged"
+    return response
+
+
+@require_http_methods(["DELETE", "POST"])
+def delete_subtask(request, pk):
+    subtask = get_object_or_404(SubTask, pk=pk)
+    subtask.delete()
+    response = HttpResponse("")
+    response["HX-Trigger"] = "taskListChanged"
+    return response
+
+
+# --- Notes (Autosave & Add) ---
+
+@require_POST
+def update_notes(request, task_pk):
+    task = get_object_or_404(Task, pk=task_pk)
+    task.notes = request.POST.get('notes', '')
+    task.save()
+    return HttpResponse(status=204)
+
 
 @require_POST
 def add_note(request, task_pk):

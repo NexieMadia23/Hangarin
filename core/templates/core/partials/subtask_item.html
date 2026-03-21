@@ -1,0 +1,19 @@
+<li class="flex items-center justify-between group animate-in fade-in duration-300">
+    <div class="flex items-center space-x-3">
+        <input type="checkbox" 
+               {% if sub.is_completed %}checked{% endif %}
+               hx-post="{% url 'core:toggle_subtask' sub.pk %}"
+               hx-target="#progress-container"
+               hx-swap="outerHTML"
+               class="w-4 h-4 rounded border-slate-300 text-[#00c875] focus:ring-[#00c875] transition-all cursor-pointer">
+        <span class="text-sm {% if sub.is_completed %}line-through text-slate-400{% else %}text-slate-600{% endif %} font-medium">
+            {{ sub.title }}
+        </span>
+    </div>
+    <button hx-delete="{% url 'core:delete_subtask' sub.pk %}" 
+            hx-target="closest li" 
+            hx-swap="outerHTML"
+            class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-400 transition-all">
+        <i class="fa-solid fa-xmark text-xs"></i>
+    </button>
+</li>

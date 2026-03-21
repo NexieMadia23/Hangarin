@@ -1,0 +1,62 @@
+<div class="sidebar-update p-1 animate-in fade-in slide-in-from-right-4 duration-300">
+    <div class="flex justify-between items-start mb-6">
+        <div>
+            <span class="text-[10px] font-black text-[#00c875] uppercase tracking-widest">Task Details</span>
+            <h3 class="text-xl font-black text-slate-800 leading-tight mt-1">{{ task.title }}</h3>
+        </div>
+        <button hx-delete="{% url 'core:task_delete' task.pk %}" 
+                hx-confirm="Delete this entire task?"
+                hx-target="body" 
+                class="text-slate-300 hover:text-rose-500 transition-colors p-2">
+            <i class="fa-solid fa-trash-can text-sm"></i>
+        </button>
+    </div>
+
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-2">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Notes & Description</label>
+            <div id="autosave-indicator" class="flex items-center text-[9px] text-slate-300 italic">
+                <i class="fa-solid fa-cloud mr-1"></i> Ready
+            </div>
+        </div>
+        <textarea name="notes" 
+                  hx-post="{% url 'core:update_notes' task.pk %}" 
+                  hx-trigger="keyup changed delay:1s"
+                  hx-indicator="#autosave-indicator"
+                  placeholder="Type notes here... they save automatically."
+                  class="w-full h-40 bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm text-slate-600 focus:bg-white focus:ring-4 focus:ring-[#00c875]/10 focus:border-[#00c875] outline-none transition-all resize-none shadow-inner italic leading-relaxed">{% if task.notes %}{{ task.notes }}{% endif %}</textarea>
+    </div>
+
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subtasks Checklist</label>
+            <span class="text-[10px] font-bold bg-[#00c875]/10 text-[#00c875] px-2 py-0.5 rounded-full">
+                {{ task.subtasks.count }}
+            </span>
+        </div>
+
+        <form hx-post="{% url 'core:add_subtask' task.pk %}" 
+              hx-target="#subtask-list" 
+              hx-swap="beforeend"
+              hx-on::after-request="this.reset()" 
+              class="relative mb-6">
+            {% csrf_token %}
+            <input type="text" name="subtask_title" placeholder="Add a new step..." 
+                   class="w-full bg-white border-b-2 border-slate-100 py-2 pr-10 text-sm focus:border-[#00c875] outline-none transition-all font-medium placeholder:text-slate-300">
+            <button type="submit" class="absolute right-0 top-2 text-[#00c875] hover:scale-125 transition-transform">
+                <i class="fa-solid fa-circle-plus text-lg"></i>
+            </button>
+        </form>
+
+        <ul id="subtask-list" class="space-y-1">
+            {% for sub in task.subtasks.all %}
+                {% include 'core/partials/subtask_item.html' %}
+            {% empty %}
+                <div id="no-subtasks" class="text-center py-6">
+                    <i class="fa-solid fa-list-check text-slate-100 text-3xl mb-2 block"></i>
+                    <p class="text-[11px] text-slate-400 italic">No subtasks yet.</p>
+                </div>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
