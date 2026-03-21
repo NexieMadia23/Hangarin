@@ -36,8 +36,8 @@ Follow these steps to get your local development environment running:
 ### 1. Setup Environment
 ```bash
 # Clone the repository
-git clone [https://github.com/NexieMadia23/Hangarin](https://github.com/NexieMadia23/Hangarin)
-cd hangarin-workspace
+git clone https://github.com/NexieMadia23/Hangarin
+cd Hangarin
 
 # Create and activate virtual environment
 python -m venv venv
