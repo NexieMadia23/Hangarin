@@ -1,23 +1,22 @@
 {% for task in tasks %}
 <tr class="task-row hover:bg-slate-50/50 transition-all border-b border-slate-100 group 
-    {% if task.status == 'Done' %} bg-emerald-50/30 {% endif %}" id="task-{{ task.id }}">
+    {% if task.status == 'Completed' %} bg-emerald-50/30 {% endif %}" id="task-{{ task.id }}">
     
     <td class="p-4 border-l-[6px] align-middle border-r border-slate-50
-        {% if task.status == 'Done' %} border-l-[#00c875] 
+        {% if task.status == 'Completed' %} border-l-[#00c875] 
         {% elif task.status == 'In Progress' %} border-l-[#fdab3d] 
-        {% elif task.status == 'Review' %} border-l-[#579bfc] 
-        {% elif task.status == 'Starting' %} border-l-[#c4c4c4] 
+        {% elif task.status == 'Pending' %} border-l-[#c4c4c4] 
         {% else %} border-l-slate-300 {% endif %}">
         
         <div class="font-bold tracking-tight leading-tight transition-all
-            {% if task.status == 'Done' %} text-slate-400 line-through {% else %} text-slate-800 {% endif %}">
+            {% if task.status == 'Completed' %} text-slate-400 line-through {% else %} text-slate-800 {% endif %}">
             {{ task.title }}
         </div>
 
         <div class="text-[10px] font-black uppercase tracking-widest mt-1.5 flex items-center gap-2">
-            {% if task.status == 'Done' %}
+            {% if task.status == 'Completed' %}
                 <span class="text-[#00c875] bg-emerald-50 px-2 py-0.5 rounded border border-[#00c875]/20 flex items-center">
-                    <i class="fa-solid fa-check-double mr-1 text-[8px]"></i> DONE
+                    <i class="fa-solid fa-check-double mr-1 text-[8px]"></i> COMPLETED
                 </span>
             {% else %}
                 {% if task.category %}
@@ -51,13 +50,12 @@
                 hx-target="closest tr" 
                 hx-swap="outerHTML"
                 class="h-9 w-36 inline-flex items-center justify-center px-4 rounded-md text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm text-white
-                {% if task.status == 'Done' %} bg-[#00c875] hover:bg-[#00ae65] shadow-[0_0_15px_rgba(0,200,117,0.2)]
+                {% if task.status == 'Completed' %} bg-[#00c875] hover:bg-[#00ae65] shadow-[0_0_15px_rgba(0,200,117,0.2)]
                 {% elif task.status == 'In Progress' %} bg-[#fdab3d] hover:bg-[#e69b37]
-                {% elif task.status == 'Review' %} bg-[#579bfc] hover:bg-[#4a89e4]
                 {% else %} bg-[#c4c4c4] hover:bg-[#b0b0b0] {% endif %}">
             
-            {% if task.status == 'Done' %}
-                <i class="fa-solid fa-check-double mr-2"></i> DONE
+            {% if task.status == 'Completed' %}
+                <i class="fa-solid fa-check-double mr-2"></i> COMPLETED
             {% else %}
                 {{ task.status|upper }}
             {% endif %}
@@ -66,7 +64,7 @@
 
     <td class="p-4 w-32 text-center align-middle border-r border-slate-50">
         <div class="h-8 inline-flex items-center px-3 text-[10px] font-black uppercase tracking-widest rounded border-2
-            {% if task.status == 'Done' %} border-slate-100 text-slate-300 bg-slate-50/50
+            {% if task.status == 'Completed' %} border-slate-100 text-slate-300 bg-slate-50/50
             {% elif task.priority.name == 'High' %} border-rose-100 text-rose-600 bg-rose-50
             {% elif task.priority.name == 'Medium' %} border-amber-100 text-amber-600 bg-amber-50
             {% else %} border-emerald-100 text-emerald-600 bg-emerald-50 {% endif %}">
@@ -74,28 +72,42 @@
         </div>
     </td>
 
-    <td class="p-4 w-[240px] align-middle">
-        <div class="flex justify-start items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button hx-get="{% url 'core:task_edit' task.pk %}" hx-target="#modal-content" onclick="openModal()"
-                    class="h-9 px-4 inline-flex items-center bg-indigo-600 text-white text-[11px] font-black uppercase rounded-lg shadow-sm hover:bg-indigo-700 transition-all">
-                Edit
+    <td class="p-4 w-[280px] align-middle">
+        <div class="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            
+            <button hx-get="{% url 'core:task_edit' task.pk %}?inline=true" 
+                    hx-target="closest tr" 
+                    hx-swap="outerHTML"
+                    class="h-8 w-8 flex items-center justify-center bg-slate-100 text-slate-500 rounded-lg hover:bg-indigo-600 hover:text-white transition-all"
+                    title="Quick Edit">
+                <i class="fa-solid fa-bolt text-xs"></i>
             </button>
+
+            <button hx-get="{% url 'core:task_edit' task.pk %}" 
+                    hx-target="#modal-content" 
+                    hx-swap="innerHTML"
+                    onclick="openModal()"
+                    class="h-9 px-4 inline-flex items-center bg-slate-800 text-white text-[11px] font-black uppercase rounded-lg shadow-sm hover:bg-black transition-all">
+                Full Edit
+            </button>
+
             <button hx-delete="{% url 'core:task_delete' task.pk %}" 
                     hx-confirm="Delete this task?" 
                     hx-target="closest tr" 
                     hx-swap="outerHTML"
-                    class="h-9 px-4 inline-flex items-center border-2 border-slate-200 bg-white text-slate-500 text-[11px] font-black uppercase rounded-lg hover:bg-rose-50 hover:text-[#e2445c] transition-all">
-                Delete
+                    class="h-9 px-4 inline-flex items-center border-2 border-slate-200 bg-white text-slate-500 text-[11px] font-black uppercase rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-all">
+                <i class="fa-solid fa-trash"></i>
             </button>
         </div>
     </td>
 </tr>
+
 {% empty %}
 <tr>
     <td colspan="4" class="p-20 text-center">
         <div class="flex flex-col items-center text-slate-300">
             <i class="fa-solid fa-clipboard-list text-5xl mb-4"></i>
-            <p class="font-bold uppercase text-xs tracking-widest">Everything is organized!</p>
+            <p class="font-bold uppercase text-xs tracking-widest">No tasks found</p>
         </div>
     </td>
 </tr>

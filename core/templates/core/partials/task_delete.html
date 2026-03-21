@@ -1,11 +1,28 @@
-<div class="p-6 text-center">
-    <h3 class="text-lg font-black text-[#FF0000] mb-2">Delete Task?</h3>
-    <p class="text-sm text-slate-500 mb-6">Are you sure you want to delete "{{ task.title }}"? This cannot be undone.</p>
-    <form hx-post="{% url 'task_delete' task.pk %}">
+<div class="p-8 text-center animate-in fade-in zoom-in duration-200">
+    <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-rose-100/50">
+        <i class="fa-solid fa-trash-can text-2xl"></i>
+    </div>
+
+    <h3 class="text-xl font-black text-slate-800 mb-2 tracking-tight">Delete Task?</h3>
+    <p class="text-sm text-slate-500 mb-8 px-4 leading-relaxed">
+        Are you sure you want to delete <span class="font-bold text-slate-700">"{{ task.title }}"</span>? This action is permanent and cannot be undone.
+    </p>
+
+    <form hx-post="{% url 'task_delete' task.pk %}"
+          hx-target="#modal-content"
+          hx-on::after-request="if(event.detail.successful) { closeModal(); }"
+          class="flex flex-col sm:flex-row justify-center gap-3">
         {% csrf_token %}
-        <div class="flex justify-center space-x-4">
-            <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-100 rounded-full font-bold">No, Keep it</button>
-            <button type="submit" class="px-4 py-2 bg-[#FF0000] text-white rounded-full font-bold">Yes, Delete</button>
-        </div>
+        
+        <button type="button" 
+                onclick="closeModal()" 
+                class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold transition-all order-2 sm:order-1 active:scale-95">
+            No, Keep it
+        </button>
+
+        <button type="submit" 
+                class="px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold shadow-lg shadow-rose-200/50 transition-all active:scale-95 order-1 sm:order-2">
+            Yes, Delete Task
+        </button>
     </form>
 </div>

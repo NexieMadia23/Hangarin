@@ -1,77 +1,135 @@
-<div class="p-8">
-    <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-black text-slate-800 tracking-tight">{{ title }}</h3>
-        <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition text-2xl">&times;</button>
+<div class="p-8 max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight">{{ title|default:"Manage Task" }}</h3>
+            <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Hangarin Task Manager</p>
+        </div>
+        <button type="button" onclick="closeModal()" class="text-slate-300 hover:text-slate-600 transition-all text-3xl">&times;</button>
     </div>
 
-    <form hx-post="{{ request.path }}" hx-target="#modal-content" class="space-y-5">
-        {% csrf_token %}
+    <div class="grid {% if task %}grid-cols-1 lg:grid-cols-5{% else %}grid-cols-1{% endif %} gap-10">
         
-        <div class="space-y-4">
-            {% for field in form %}
-                <div class="flex flex-col space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1" for="{{ field.id_for_label }}">
-                        {{ field.label }}
-                    </label>
-                    
-                    {% if field.name == 'description' %}
-                        <textarea name="{{ field.name }}" id="{{ field.id_for_label }}"
-                            placeholder="Add more details about this task..."
-                            class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all min-h-[100px] resize-none">{{ field.value|default_if_none:"" }}</textarea>
-                    
-                    {% elif field.name == 'status' or field.name == 'priority' or field.name == 'category' %}
-                        <div class="relative group">
-                            <select name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all cursor-pointer appearance-none block">
-                                {% for value, label in field.field.choices %}
-                                    <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
-                                        {{ label }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-[#00c875] transition-colors">
-                                <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                            </div>
-                        </div>
+        <div class="{% if task %}lg:col-span-3{% endif %} space-y-6">
+            <form hx-post="{{ request.path }}" 
+                  hx-target="#task-table-body" 
+                  hx-swap="innerHTML"
+                  class="space-y-5">
+                {% csrf_token %}
+                
+                <div class="space-y-4">
+                    {% for field in form %}
+                        <div class="flex flex-col space-y-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1" for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                            </label>
+                            
+                            {% if field.name == 'description' %}
+                                <textarea name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                    placeholder="Add more details about this task..."
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all min-h-[120px] resize-none">{{ field.value|default_if_none:"" }}</textarea>
+                            
+                            {% elif field.name == 'status' or field.name == 'priority' or field.name == 'category' %}
+                                <div class="relative group">
+                                    <select name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all cursor-pointer appearance-none block">
+                                        {% for value, label in field.field.choices %}
+                                            {% if value %} 
+                                                <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                    </div>
+                                </div>
 
-                    {% elif field.name == 'deadline' or field.name == 'due_date' %}
-                        <div class="relative">
-                            <input type="datetime-local" 
-                                   name="{{ field.name }}" 
-                                   id="{{ field.id_for_label }}"
-                                   value="{% if field.value %}{{ field.value|date:'Y-m-d\TH:i' }}{% endif %}"
-                                   class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all">
-                        </div>
+                            {% elif field.name == 'deadline' %}
+                                <input type="datetime-local" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                    value="{{ field.value|date:'Y-m-d\TH:i' }}"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all">
 
-                    {% else %}
-                        <div class="relative">
-                            <input type="{{ field.field.widget.input_type|default:'text' }}" 
-                                   name="{{ field.name }}" 
-                                   id="{{ field.id_for_label }}"
-                                   placeholder="Enter {{ field.label|lower }}..."
-                                   value="{{ field.value|default_if_none:'' }}"
-                                   class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all">
+                            {% else %}
+                                <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                                    name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                    placeholder="Enter {{ field.label|lower }}..."
+                                    value="{{ field.value|default_if_none:'' }}"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-[#00c875] outline-none transition-all">
+                            {% endif %}
+                            
+                            {% if field.errors %}
+                                <p class="text-[10px] text-rose-500 font-bold mt-1 ml-1 flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-exclamation"></i> {{ field.errors.0 }}
+                                </p>
+                            {% endif %}
                         </div>
-                    {% endif %}
-                    
-                    {% if field.errors %}
-                        <p class="text-[10px] text-rose-500 font-bold mt-1 ml-1 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-exclamation"></i> {{ field.errors.0 }}
-                        </p>
-                    {% endif %}
+                    {% endfor %}
                 </div>
-            {% endfor %}
+
+                <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end items-center space-x-4">
+                    <button type="button" onclick="closeModal()" 
+                        class="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors px-2">
+                        Discard
+                    </button>
+                    <button type="submit" 
+                        class="bg-[#00c875] hover:bg-[#00b469] text-white px-10 py-3 rounded-xl font-bold shadow-lg shadow-green-100 transition-all active:scale-95 text-sm uppercase tracking-wider">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
         </div>
 
-        <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end items-center space-x-4">
-            <button type="button" onclick="closeModal()" 
-                class="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors px-2">
-                Discard
-            </button>
-            <button type="submit" 
-                class="bg-[#00c875] hover:bg-[#00b469] text-white px-10 py-3 rounded-xl font-bold shadow-lg shadow-green-100 transition-all active:scale-95 text-sm">
-                Confirm & Save
-            </button>
+        {% if task %}
+        <div class="lg:col-span-2 space-y-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+            
+            <div id="subtask-container">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Goal Breakdown</p>
+                <div id="subtask-list" class="space-y-2 mb-4">
+                    {% for sub in task.subtasks.all %}
+                        <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 group">
+                            <span class="text-xs font-bold text-slate-600">{{ sub.title }}</span>
+                            <span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">{{ sub.status }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="text-xs text-slate-400 italic">No subtasks yet.</p>
+                    {% endfor %}
+                </div>
+                
+                <form hx-post="{% url 'core:add_subtask' task.pk %}" hx-target="#subtask-list" class="flex gap-2">
+                    {% csrf_token %}
+                    <input type="text" name="subtask_title" placeholder="Add subtask..." 
+                           class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-green-500/20 outline-none">
+                    <button type="submit" class="bg-slate-800 text-white p-2 rounded-lg hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div id="note-container">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Notes</p>
+                <div id="note-list" class="space-y-3 mb-4">
+                    {% for note in task.notes.all %}
+                        <div class="bg-amber-50 p-3 rounded-lg border-l-4 border-amber-300">
+                            <p class="text-xs text-amber-800 leading-relaxed">{{ note.content }}</p>
+                            <span class="text-[9px] text-amber-500 mt-1 block">{{ note.created_at|date:"M d, H:i" }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="text-xs text-slate-400 italic">No notes added.</p>
+                    {% endfor %}
+                </div>
+
+                <form hx-post="{% url 'core:add_note' task.pk %}" hx-target="#note-list" class="space-y-2">
+                    {% csrf_token %}
+                    <textarea name="note_content" placeholder="Quick note..." 
+                              class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-green-500/20 outline-none resize-none h-20"></textarea>
+                    <button type="submit" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 rounded-lg text-[10px] uppercase transition">
+                        Save Note
+                    </button>
+                </form>
+            </div>
         </div>
-    </form>
+        {% endif %}
+
+    </div>
 </div>

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-kf(0dlbel&ny#_s0mcjfx7loap9npag(-=aw+=b)l4v-7*@q2&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['Nexy.pythonanywhere.com']
+ALLOWED_HOSTS = ['Nexy.pythonanywhere.com', '127.0.0.1', 'localhost']
 CSRF_TRUSTED_ORIGINS = ['https://Nexy.pythonanywhere.com']
 
 # Application definition

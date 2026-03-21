@@ -1,45 +1,52 @@
 from django.db import models
 from django.utils import timezone
 
-class Category(models.Model):
+# 1. Create the Abstract Base Model as requested
+class BaseModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True  # This ensures no table is created for BaseModel itself
+
+# 2. Inherit BaseModel in all other models
+class Category(BaseModel):
     name = models.CharField(max_length=100)
-    # The hex code used in sidebar dots and table badges
     color = models.CharField(max_length=7, default="#64748b") 
 
     class Meta:
+        verbose_name = "Category"
         verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
 
-class Priority(models.Model):
+class Priority(BaseModel):
     name = models.CharField(max_length=50)
     color = models.CharField(max_length=7, default="#64748b")
     level = models.IntegerField(default=1)
 
     class Meta:
+        verbose_name = "Priority"
         verbose_name_plural = "Priorities"
         ordering = ['-level']
 
     def __str__(self):
         return self.name
 
-class Task(models.Model):
+class Task(BaseModel):
     STATUS_CHOICES = [
-        ('Starting', 'Starting'),
-        ('In Progress', 'In Progress'),
-        ('Review', 'Review'),
-        ('Done', 'Done'),
+        ('Pending', 'Pending'),
+        ('In Progress', 'In Progress'), # Fixed the trailing space here
+        ('Completed', 'Completed'),
     ]
 
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Starting')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
     deadline = models.DateTimeField(null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks")
     priority = models.ForeignKey(Priority, on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -49,32 +56,33 @@ class Task(models.Model):
 
     @property
     def is_overdue(self):
-        """Used by the template to show the pulsing red warning."""
-        if self.deadline and self.status != 'Done':
-            return self.deadline < timezone.now()
+        if self.deadline and self.status != 'Completed':
+            return timezone.now() > self.deadline
         return False
 
-    @property
-    def subtask_progress(self):
-        """Calculates percentage of completed subtasks."""
-        total = self.subtasks.count()
-        if total == 0:
-            return 0
-        completed = self.subtasks.filter(status=True).count()
-        return int((completed / total) * 100)
-
-class SubTask(models.Model):
+class SubTask(BaseModel):
+    # Requirement: Use field choices for status in SubTask too
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('In Progress', 'In Progress'),
+        ('Completed', 'Completed'),
+    ]
+    
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="subtasks")
     title = models.CharField(max_length=200)
-    status = models.BooleanField(default=False)  # False = Pending, True = Completed
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
 
     def __str__(self):
-        return f"{self.title} (Subtask of {self.task.title})"
+        return self.title
 
-class Note(models.Model):
+    # For Admin requirement: Display parent_task_name
+    @property
+    def parent_task_name(self):
+        return self.task.title
+
+class Note(BaseModel):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="notes")
     content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Note for {self.task.title}"
+        return f"Note on {self.task.title}"
