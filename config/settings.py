@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-kf(0dlbel&ny#_s0mcjfx7loap9npag(-=aw+=b)l4v-7*@q2&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['Nexy.pythonanywhere.com']
+CSRF_TRUSTED_ORIGINS = ['https://Nexy.pythonanywhere.com']
 
 # Application definition
 
@@ -49,7 +49,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_htmx.middleware.HtmxMiddleware",
-    
+
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -118,3 +118,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'

@@ -2,21 +2,25 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.utils import timezone
-from django.db.models import Q  # Required for Focus Mode logic
-from .models import Task
+from django.db.models import Q, Count  # Added Count for the sidebar badges
+from .models import Task, Category     # Added Category import
 from .forms import TaskForm
 
 def task_list(request):
     """Main dashboard with Focus Mode, filtering, search, and category support."""
     tasks = Task.objects.all().select_related('category', 'priority').order_by('-created_at')
     
-    # 1. Grab filters from the URL
+    # 1. Fetch Categories for the Sidebar (Dynamic from Admin)
+    # We use annotate to count how many tasks are in each category
+    categories = Category.objects.annotate(task_count=Count('tasks'))
+    
+    # 2. Grab filters from the URL
     status_filter = request.GET.get('status')
     category_filter = request.GET.get('category')
     focus_mode = request.GET.get('focus') == 'true'
     search_query = request.GET.get('q') 
     
-    # 2. Apply Filtering Logic
+    # 3. Apply Filtering Logic
     if focus_mode:
         today = timezone.now().date()
         tasks = tasks.filter(
@@ -33,21 +37,23 @@ def task_list(request):
     if search_query:
         tasks = tasks.filter(title__icontains=search_query)
 
-    # 3. Progress Calculation
+    # 4. Progress Calculation
     total = Task.objects.count()
     done = Task.objects.filter(status='Done').count()
     progress = int((done / total) * 100) if total > 0 else 0
 
     context = {
         'tasks': tasks, 
+        'categories': categories,  # THIS WAS MISSING - Now passed to HTML
         'progress': progress,
         'current_category': category_filter,
         'current_status': status_filter,
         'is_focus': focus_mode
     }
     
-    # 4. HTMX Request handling
+    # 5. HTMX Request handling
     if request.htmx:
+        # If focusing, we need the whole main area; otherwise just the rows
         if 'focus' in request.GET:
              return render(request, 'core/dashboard.html', context)
         return render(request, 'core/partials/task_rows.html', context)
@@ -94,7 +100,6 @@ def toggle_status(request, pk):
     task.status = cycle.get(task.status, 'Starting')
     task.save()
     
-    # We pass the single updated task in a list to the partial
     response = render(request, 'core/partials/task_rows.html', {'tasks': [task]})
     response["HX-Trigger"] = "taskListChanged"
     return response
