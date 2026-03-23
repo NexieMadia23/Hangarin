@@ -13,7 +13,7 @@
 * **📊 Velocity Tracking:** Automated progress bars that calculate your project completion percentage.
 * **📁 Task Intelligence:** Integrated sidebar for subtasks, notes, and quick-edit functionality.
 * **🌓 Modern UI/UX:** Built with Tailwind CSS for a glassmorphism-inspired aesthetic.
-* **⚙️ Full-Cycle Task Management: Architected to Create, View, Modify, and Remove tasks instantly via an HTMX-enhanced interface.
+* **⚙️ Full-Cycle Task Management:** Architected to Create, View, Modify, and Remove tasks instantly via an HTMX-enhanced interface.
 
 
 ## Tech Stack
