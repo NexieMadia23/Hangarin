@@ -1,4 +1,4 @@
-# 🚀 Hangarin Pro Workspace
+# 🚀 Hangarin Workspace
 **Modern Task Orchestration | High-Velocity Productivity**
 
 Hangarin is a high-performance dashboard designed for teams who value aesthetic clarity and real-time efficiency. Built with a **Glassmorphism UI**, it provides a seamless experience for tracking roadmaps and managing complex workflows.
@@ -12,6 +12,16 @@ Hangarin is a high-performance dashboard designed for teams who value aesthetic 
 * **🔍 Focus Mode:** A distraction-free toggle to highlight your most critical tasks.
 * **📊 Velocity Tracking:** Automated progress bars that calculate your project completion percentage.
 * **📁 Task Intelligence:** Integrated sidebar for subtasks, notes, and quick-edit functionality.
+* **🌓 Modern UI/UX:** Built with Tailwind CSS for a glassmorphism-inspired aesthetic.
+
+## Tech Stack
+**Backend:** Python 3.10+, Django 5.1+
+
+**Frontend:** Tailwind CSS, Alpine.js, HTMX
+
+**Database:** SQLite (Development) / PostgreSQL (Production)
+
+**Deployment:** PythonAnywhere / GitHub Actions
 
 ---
 
@@ -30,6 +40,9 @@ Manage your priorities, users, and categories through the secure portal. Use the
 ---
 ## Deployed Url (pythonanywhere)
 | **URL** | `https://nexy.pythonanywhere.com` |
+
+## Project Interface: Main Task Dashboard
+![Hangarin Dashboard](assets/dashboard.png)
 
 ## 🚀 Launch & Installation
 
