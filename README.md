@@ -1,7 +1,7 @@
 # 🚀 Hangarin Workspace
 **Modern Task Orchestration | High-Velocity Productivity**
 
-Hangarin is a high-performance dashboard designed for teams who value aesthetic clarity and real-time efficiency. Built with a **Glassmorphism UI**, it provides a seamless experience for tracking roadmaps and managing complex workflows.
+**Hangarin**  is a high-performance dashboard designed for teams who value aesthetic clarity and real-time efficiency. Built with a **Glassmorphism UI**, it provides a seamless experience for tracking roadmaps and managing complex workflows.
 
 ---
 
@@ -13,6 +13,8 @@ Hangarin is a high-performance dashboard designed for teams who value aesthetic 
 * **📊 Velocity Tracking:** Automated progress bars that calculate your project completion percentage.
 * **📁 Task Intelligence:** Integrated sidebar for subtasks, notes, and quick-edit functionality.
 * **🌓 Modern UI/UX:** Built with Tailwind CSS for a glassmorphism-inspired aesthetic.
+* **⚙️ Full-Cycle Task Management: Architected to Create, View, Modify, and Remove tasks instantly via an HTMX-enhanced interface.
+
 
 ## Tech Stack
 **Backend:** Python 3.10+, Django 5.1+
@@ -28,18 +30,22 @@ Hangarin is a high-performance dashboard designed for teams who value aesthetic 
 ## 🔐 Administrative Access
 
 Manage your priorities, users, and categories through the secure portal. Use these credentials for the initial setup:
-
+### Local
 | Field | Detail |
 | :--- | :--- |
 | **Admin URL** | `http://127.0.0.1:8000/admin` |
 | **Username** | `Nexie` |
 | **Password** | `nexyness23` |
 
-> **Pro Tip:** Use the **Priority** section in the Admin to change HEX colors. The dashboard automatically applies a **15% opacity tint** to your chosen color for a professional UI look.
-
 ---
-## Deployed Url (pythonanywhere)
-| **URL** | `https://nexy.pythonanywhere.com` |
+
+### Deployed Url (pythonanywhere)
+| Field | Detail |
+| :--- | :--- |
+| **User URL** | `https://nexy.pythonanywhere.com` |
+| **Admin URL** | `https://nexy.pythonanywhere.com/admin` |
+| **Username** | `Nexie` |
+| **Password** | `nexyness23` |
 
 ## Project Interface: Main Task Dashboard
 ![Hangarin Dashboard](assets/dashboard.png)
