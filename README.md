@@ -28,6 +28,8 @@ Manage your priorities, users, and categories through the secure portal. Use the
 > **Pro Tip:** Use the **Priority** section in the Admin to change HEX colors. The dashboard automatically applies a **15% opacity tint** to your chosen color for a professional UI look.
 
 ---
+## Deployed Url (pythonanywhere)
+| **URL** | `https://nexy.pythonanywhere.com` |
 
 ## 🚀 Launch & Installation
 
