@@ -2,7 +2,12 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    # Including the core URLs and allowing the app's internal namespacing
-    path('', include('core.urls', namespace='core')), 
+    # Change 'admin.site.id' to 'admin.site.urls'
+    path('admin/', admin.site.urls), 
+    
+    # The allauth patterns for Google/Github
+    path('accounts/', include('allauth.urls')), 
+    
+    # Your main app
+    path('', include('core.urls')), 
 ]

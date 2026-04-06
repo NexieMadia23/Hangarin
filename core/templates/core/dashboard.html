@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en" x-data="{ darkMode: localStorage.getItem('dark') === 'true' }" :class="{ 'dark': darkMode }">
 <head>
@@ -20,16 +21,15 @@
     </script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <title>Hangarin | Dashboard</title>
+    <title>Hangarin | {% if user.is_authenticated %}Dashboard{% else %}Login{% endif %}</title>
     <style>
         [x-cloak] { display: none !important; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #00c875; border-radius: 10px; }
 
-        /* Modern Glassmorphism Adjustments */
         .monday-glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); }
-        .dark .monday-glass { background: rgba(15, 23, 42, 0.8); } /* Deep Navy/Slate Glass */
+        .dark .monday-glass { background: rgba(15, 23, 42, 0.8); }
         
         .nav-modern-light { 
             background: rgba(255, 255, 255, 0.8); 
@@ -52,6 +52,7 @@
 </head>
 <body class="bg-[#f8fafc] dark:bg-[#020617] font-sans text-slate-800 dark:text-slate-300 antialiased transition-colors duration-300" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
+    {% if user.is_authenticated %}
     <nav class="h-16 nav-modern-light flex items-center justify-between px-10 sticky top-0 z-[100]" x-data="{ profileOpen: false }">
         <div class="flex items-center space-x-12">
             <div class="flex items-center space-x-3">
@@ -127,7 +128,7 @@
                 <button @click="profileOpen = !profileOpen" @click.away="profileOpen = false" 
                         class="flex items-center space-x-3 group py-1 px-2 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-all">
                     <div class="text-right">
-                        <p class="text-[11px] font-black text-slate-900 dark:text-slate-100 leading-none">NX_User</p>
+                        <p class="text-[11px] font-black text-slate-900 dark:text-slate-100 leading-none">{{ user.username }}</p>
                         <p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Premium</p>
                     </div>
                     <div class="w-9 h-9 bg-slate-900 dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform border border-transparent dark:border-slate-700">
@@ -145,6 +146,10 @@
                     </a>
                     <a href="#" class="flex items-center px-4 py-2.5 text-[12px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-[#00c875]/5 hover:text-[#00c875] transition-all">
                         <i class="fa-solid fa-sliders mr-3 opacity-40"></i> Settings
+                    </a>
+                    <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
+                    <a href="{% url 'account_logout' %}" class="flex items-center px-4 py-2.5 text-[12px] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
+                        <i class="fa-solid fa-right-from-bracket mr-3 opacity-70"></i> Logout
                     </a>
                 </div>
             </div>
@@ -269,6 +274,63 @@
         </main>
     </div>
 
+    {% else %}
+    <div class="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-[#020617] px-6">
+        <div class="w-full max-w-md p-8 monday-glass rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <div class="flex flex-col items-center mb-8">
+                <div class="bg-[#00c875] p-4 rounded-2xl shadow-xl shadow-green-500/30 mb-4">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                </div>
+                <h1 class="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-none">Hangarin</h1>
+                <p class="text-[#00c875] text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Workspace Identity</p>
+            </div>
+
+            <div class="space-y-5">
+                <form action="{% url 'account_login' %}" method="POST" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Credentials</label>
+                        <input type="text" name="login" placeholder="Email or Username" required
+                            class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 mt-1 focus:ring-4 focus:ring-[#00c875]/10 focus:border-[#00c875] outline-none transition-all font-medium text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Security</label>
+                        <input type="password" name="password" placeholder="••••••••" required
+                            class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 mt-1 focus:ring-4 focus:ring-[#00c875]/10 focus:border-[#00c875] outline-none transition-all font-medium text-sm">
+                    </div>
+                    <button type="submit" class="w-full bg-[#00c875] hover:bg-[#00b469] text-white py-4 rounded-2xl font-black shadow-xl shadow-green-500/20 transition-all text-[11px] uppercase tracking-[0.2em]">
+                        Enter Workspace
+                    </button>
+                </form>
+
+                <div class="flex items-center my-6">
+                    <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+                    <span class="px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Or Secure Login</span>
+                    <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <a href="{% provider_login_url 'google' %}" class="flex items-center justify-center gap-3 py-3 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:border-[#00c875] hover:shadow-md transition-all group">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google">
+                        <span class="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-tighter">Google</span>
+                    </a>
+                    
+                    <a href="{% provider_login_url 'github' %}" class="flex items-center justify-center gap-3 py-3 px-4 bg-slate-900 text-white rounded-xl hover:bg-black hover:shadow-lg transition-all group border border-slate-700">
+                        <i class="fa-brands fa-github text-sm"></i>
+                        <span class="text-[10px] font-black uppercase tracking-tighter">GitHub</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">
+                    New here? <a href="{% url 'account_signup' %}" class="text-[#00c875] hover:underline">Create Account</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div id="modal" class="fixed inset-0 hidden items-center justify-center z-[200] light-blur opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeModal()">
         <div id="modal-content" class="transform scale-95 opacity-0 transition-all duration-300 w-full flex justify-center p-6"></div>
     </div>
@@ -277,6 +339,7 @@
         const modal = document.getElementById('modal');
         const content = document.getElementById('modal-content');
         function openModal() { 
+            if(!modal) return;
             modal.classList.add('modal-show'); 
             modal.classList.remove('hidden'); 
             setTimeout(() => { 
@@ -285,6 +348,7 @@
             }, 10); 
         }
         function closeModal() { 
+            if(!content) return;
             content.classList.remove('modal-content-active'); 
             modal.classList.remove('opacity-100');
             setTimeout(() => { 
