@@ -1,0 +1,17 @@
+<div id="note-section" class="space-y-3">
+    {% for note in task.notes.all %}
+    <div class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 transition-all hover:border-[#00c875]/30">
+        <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">{{ note.content }}</p>
+        <div class="flex justify-between items-center mt-2">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                {{ note.created_at|date:"M d, H:i" }}
+            </span>
+        </div>
+    </div>
+    {% empty %}
+    <div class="py-6 text-center">
+        <i class="fa-solid fa-note-sticky text-slate-200 dark:text-slate-800 text-2xl mb-2"></i>
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">No notes yet</p>
+    </div>
+    {% endfor %}
+</div>
