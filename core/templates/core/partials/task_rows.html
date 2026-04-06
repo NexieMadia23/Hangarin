@@ -63,7 +63,7 @@
     <td class="p-4 w-32 text-center align-middle border-r border-slate-50">
         <div class="h-8 inline-flex items-center px-3 text-[10px] font-black uppercase tracking-widest rounded border-2 transition-all"
             {% if task.status == 'Completed' %}
-                style="border-color: #f1f5f9; text-color: #cbd5e1; background-color: #f8fafc;"
+                style="border-color: #f1f5f9; color: #cbd5e1; background-color: #f8fafc;"
             {% else %}
                 style="border-color: {{ task.priority.color }}40; color: {{ task.priority.color }}; background-color: {{ task.priority.color }}10;"
             {% endif %}>
@@ -73,12 +73,10 @@
 
     <td class="p-4 w-[280px] align-middle">
         <div class="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-            
             <button hx-get="{% url 'core:task_edit' task.pk %}?inline=true" 
                     hx-target="#task-{{ task.id }}" 
                     hx-swap="outerHTML"
-                    class="h-9 w-9 flex items-center justify-center bg-slate-100 text-slate-500 rounded-lg hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
-                    title="Quick Edit">
+                    class="h-9 w-9 flex items-center justify-center bg-slate-100 text-slate-500 rounded-lg hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
                 <i class="fa-solid fa-bolt text-xs"></i>
             </button>
 
@@ -101,13 +99,47 @@
 </tr>
 
 {% empty %}
-<tr>
-    <td colspan="4" class="p-20 text-center">
-        <div class="flex flex-col items-center text-slate-300">
-            <i class="fa-solid fa-clipboard-list text-5xl mb-4"></i>
-            <p class="font-bold uppercase text-xs tracking-widest">No tasks found</p>
-            <button hx-get="{% url 'core:task_list' %}" hx-target="#task-table-body" class="mt-4 text-indigo-500 text-[10px] font-black hover:underline">RESET VIEW</button>
+    {% if not tasks.has_previous %}
+    <tr>
+        <td colspan="4" class="p-20 text-center">
+            <div class="flex flex-col items-center text-slate-300">
+                <i class="fa-solid fa-clipboard-list text-5xl mb-4"></i>
+                <p class="font-bold uppercase text-xs tracking-widest">No tasks found</p>
+            </div>
+        </td>
+    </tr>
+    {% endif %}
+{% endfor %}
+
+{# --- NUMBERED PAGINATION CONTROLS --- #}
+{% if not is_single and tasks.has_other_pages %}
+<tr id="pagination-row">
+    <td colspan="4" class="p-6 bg-slate-50/50">
+        <div class="flex justify-between items-center px-4">
+            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Showing page {{ tasks.number }} of {{ tasks.paginator.num_pages }}
+            </div>
+            
+            <div class="flex gap-2">
+                {% if tasks.has_previous %}
+                <button hx-get="{% url 'core:task_list' %}?page={{ tasks.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if is_focus %}&focus=true{% endif %}"
+                        hx-target="#task-table-body"
+                        hx-push-url="true"
+                        class="h-8 px-4 bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest rounded-md hover:bg-slate-100 transition-all">
+                    Previous
+                </button>
+                {% endif %}
+
+                {% if tasks.has_next %}
+                <button hx-get="{% url 'core:task_list' %}?page={{ tasks.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if is_focus %}&focus=true{% endif %}"
+                        hx-target="#task-table-body"
+                        hx-push-url="true"
+                        class="h-8 px-4 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-md hover:bg-black transition-all">
+                    Next
+                </button>
+                {% endif %}
+            </div>
         </div>
     </td>
 </tr>
-{% endfor %}
+{% endif %}

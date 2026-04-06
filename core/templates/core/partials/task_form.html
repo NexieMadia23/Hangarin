@@ -1,70 +1,92 @@
-<div class="p-8 {% if task %}max-w-5xl{% else %}max-w-xl{% endif %} mx-auto bg-white rounded-3xl">
-    <div class="flex justify-between items-center mb-10">
+<div class="p-6 {% if task %}max-w-4xl{% else %}max-w-lg{% endif %} mx-auto bg-white rounded-[2.5rem] shadow-2xl transition-all">
+    <div class="flex justify-between items-center mb-6 px-2">
         <div>
-            <h3 class="text-2xl font-black text-slate-800 tracking-tight">
-                {% if task %}Edit <span class="text-[#00c875]">Task</span>{% else %}Create <span class="text-[#00c875]">New Task</span>{% endif %}
+            <h3 class="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                {% if task %}
+                    <i class="fa-solid fa-pen-to-square text-[#00c875] text-sm"></i> Edit <span class="text-[#00c875]">Task</span>
+                {% else %}
+                    <i class="fa-solid fa-plus-circle text-[#00c875] text-sm"></i> Create <span class="text-[#00c875]">New Task</span>
+                {% endif %}
             </h3>
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-1">Hangarin Professional Workspace</p>
+            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-0.5">Professional Workspace</p>
         </div>
-        <button type="button" onclick="closeModal()" class="text-slate-300 hover:text-rose-500 transition-all text-4xl">&times;</button>
+        <button type="button" onclick="closeModal()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-300 hover:text-rose-500 transition-all text-2xl">&times;</button>
     </div>
 
-    <div class="grid {% if task %}grid-cols-1 lg:grid-cols-5{% else %}grid-cols-1{% endif %} gap-12">
+    <div class="grid {% if task %}grid-cols-1 lg:grid-cols-5{% else %}grid-cols-1{% endif %} gap-6">
         
-        <div class="{% if task %}lg:col-span-3{% endif %} space-y-6">
-            <form hx-post="{{ request.path }}" hx-target="#task-table-body" class="space-y-6">
+        <div class="{% if task %}lg:col-span-3{% endif %} space-y-4">
+            <form hx-post="{{ request.path }}" hx-target="#task-table-body" class="space-y-4">
                 {% csrf_token %}
                 
-                <div class="space-y-5">
+                <div class="space-y-4">
                     {% for field in form %}
-                        <div class="flex flex-col space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1" for="{{ field.id_for_label }}">
-                                {{ field.label }}
-                            </label>
-                            
-                            {% if field.name == 'description' %}
-                                <textarea name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm text-slate-700 focus:bg-white focus:border-[#00c875] outline-none transition-all min-h-[140px] resize-none shadow-sm">{{ field.value|default_if_none:"" }}</textarea>
-                            
-                            {% elif field.name == 'status' or field.name == 'priority' or field.name == 'category' %}
-                                <div class="relative group">
-                                    <select name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 focus:bg-white focus:border-[#00c875] outline-none transition-all cursor-pointer appearance-none block shadow-sm">
+                        {% if field.name == 'title' %}
+                            <div class="flex flex-col space-y-1.5">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{{ field.label }}</label>
+                                <input type="text" name="{{ field.name }}" value="{{ field.value|default:'' }}" 
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:bg-white focus:border-[#00c875] focus:ring-4 focus:ring-[#00c875]/5 outline-none transition-all shadow-sm">
+                            </div>
+
+                        {% elif field.name == 'description' %}
+                            <div class="flex flex-col space-y-1.5">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{{ field.label }}</label>
+                                <textarea name="{{ field.name }}" 
+                                          class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-600 focus:bg-white focus:border-[#00c875] outline-none transition-all min-h-[80px] resize-none shadow-sm">{{ field.value|default:'' }}</textarea>
+                            </div>
+
+                        {% elif field.name == 'status' or field.name == 'priority' or field.name == 'category' %}
+                            {% else %}
+                            <div class="flex flex-col space-y-1.5">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{{ field.label }}</label>
+                                <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}" value="{{ field.value|default:'' }}"
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 focus:bg-white focus:border-[#00c875] outline-none transition-all shadow-sm">
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        {% for field in form %}
+                            {% if field.name == 'status' or field.name == 'priority' or field.name == 'category' %}
+                            <div class="flex flex-col space-y-1.5">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{{ field.label }}</label>
+                                <div class="relative">
+                                    <select name="{{ field.name }}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 focus:bg-white focus:border-[#00c875] outline-none transition-all appearance-none cursor-pointer">
                                         {% for value, label in field.field.choices %}
                                             <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
                                         {% endfor %}
                                     </select>
-                                    <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                        <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                                    </div>
                                 </div>
-
-                            {% else %}
-                                <input type="{{ field.field.widget.input_type|default:'text' }}" 
-                                    name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                    value="{{ field.value|default_if_none:'' }}"
-                                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 focus:bg-white focus:border-[#00c875] outline-none transition-all shadow-sm">
+                            </div>
                             {% endif %}
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
 
-                <div class="mt-10 pt-8 border-t border-slate-100 flex justify-end items-center space-x-4">
-                    <button type="button" onclick="closeModal()" class="text-xs font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest">Discard</button>
-                    <button type="submit" class="bg-[#00c875] hover:bg-[#00b469] text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-green-100 transition-all active:scale-95 text-xs uppercase tracking-[0.2em]">
-                        Save Changes
+                <div class="mt-6 pt-6 border-t border-slate-50 flex justify-end items-center space-x-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-all">Discard</button>
+                    <button type="submit" class="bg-[#00c875] hover:bg-black text-white px-8 py-3.5 rounded-xl font-black shadow-lg shadow-green-500/10 transition-all active:scale-95 text-[10px] uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-check"></i> Save Changes
                     </button>
                 </div>
             </form>
         </div>
 
         {% if task %}
-        <div class="lg:col-span-2 space-y-10">
-            <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-inner">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 px-2">Goal Breakdown</p>
-                <div id="subtask-list" class="space-y-3 mb-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-slate-50 p-5 rounded-[2rem] border border-slate-100">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1 flex items-center justify-between">
+                    Goal Breakdown
+                    <span class="text-[#00c875]"><i class="fa-solid fa-list-check"></i></span>
+                </p>
+                <div id="subtask-list" class="space-y-2 mb-4 max-h-[160px] overflow-y-auto pr-1">
                     {% for sub in task.subtasks.all %}
-                        <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                            <span class="text-xs font-bold text-slate-600">{{ sub.title }}</span>
-                            <span class="text-[8px] px-2 py-1 rounded-md bg-[#00c875]/10 text-[#00c875] uppercase font-black">{{ sub.status }}</span>
+                        <div class="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-slate-100 group transition-all hover:border-[#00c875]">
+                            <span class="text-[11px] font-bold text-slate-600">{{ sub.title }}</span>
+                            <span class="text-[7px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 uppercase font-black group-hover:bg-[#00c875]/10 group-hover:text-[#00c875] transition-all">{{ sub.status }}</span>
                         </div>
                     {% endfor %}
                 </div>
@@ -72,26 +94,26 @@
                 <form hx-post="{% url 'core:add_subtask' task.pk %}" hx-target="#subtask-list" class="flex gap-2">
                     {% csrf_token %}
                     <input type="text" name="subtask_title" placeholder="+ Add Step" 
-                           class="flex-1 bg-white border-2 border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:border-[#00c875]">
-                    <button type="submit" class="bg-slate-800 text-white px-4 rounded-xl hover:bg-black transition-all"><i class="fa-solid fa-plus text-xs"></i></button>
+                           class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-[10px] font-bold outline-none focus:border-[#00c875] transition-all">
+                    <button type="submit" class="bg-slate-800 text-white w-9 h-9 rounded-lg hover:bg-black transition-all flex items-center justify-center shadow-md"><i class="fa-solid fa-plus text-[10px]"></i></button>
                 </form>
             </div>
 
-            <div class="bg-amber-50/50 p-6 rounded-[2rem] border border-amber-100 shadow-inner">
-                <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-6 px-2">Strategic Notes</p>
-                <div id="note-list" class="space-y-3 mb-6">
+            <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
+                <p class="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-4 px-1">Quick Notes</p>
+                <div id="note-list" class="space-y-2 mb-4 max-h-[120px] overflow-y-auto pr-1">
                     {% for note in task.notes.all %}
-                        <div class="bg-white p-4 rounded-2xl border-l-4 border-amber-300 shadow-sm">
-                            <p class="text-xs text-slate-600 font-medium leading-relaxed">{{ note.content }}</p>
+                        <div class="bg-amber-50/50 p-3 rounded-xl border-l-2 border-amber-300">
+                            <p class="text-[10px] text-slate-600 font-medium leading-relaxed">{{ note.content }}</p>
                         </div>
                     {% endfor %}
                 </div>
 
                 <form hx-post="{% url 'core:add_note' task.pk %}" hx-target="#note-list" class="space-y-2">
                     {% csrf_token %}
-                    <textarea name="note_content" placeholder="Quick thought..." 
-                              class="w-full bg-white border-2 border-slate-100 rounded-xl px-4 py-3 text-xs outline-none focus:border-amber-400 h-20 resize-none font-medium transition-all"></textarea>
-                    <button type="submit" class="w-full bg-amber-200 hover:bg-amber-300 text-amber-800 font-black py-2.5 rounded-xl text-[9px] uppercase tracking-widest transition-all">
+                    <textarea name="note_content" placeholder="Share a thought..." 
+                              class="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] outline-none focus:bg-white focus:border-amber-300 h-16 resize-none font-medium transition-all"></textarea>
+                    <button type="submit" class="w-full bg-amber-100 hover:bg-amber-400 hover:text-white text-amber-700 font-black py-2 rounded-lg text-[8px] uppercase tracking-widest transition-all">
                         Post Note
                     </button>
                 </form>

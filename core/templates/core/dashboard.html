@@ -1,38 +1,56 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" x-data="{ darkMode: localStorage.getItem('dark') === 'true' }" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#00c875',
+                    }
+                }
+            }
+        }
+    </script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <title>Hangarin | Dashboard</title>
     <style>
         [x-cloak] { display: none !important; }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f8fafc; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #00c875; border-radius: 10px; }
 
+        /* Modern Glassmorphism Adjustments */
         .monday-glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); }
+        .dark .monday-glass { background: rgba(15, 23, 42, 0.8); } /* Deep Navy/Slate Glass */
         
         .nav-modern-light { 
             background: rgba(255, 255, 255, 0.8); 
             backdrop-filter: blur(20px) saturate(180%);
             border-bottom: 1px solid rgba(226, 232, 240, 0.8);
         }
+        .dark .nav-modern-light {
+            background: rgba(11, 17, 29, 0.9);
+            border-bottom: 1px solid rgba(30, 41, 59, 0.7);
+        }
         
         #modal.modal-show { display: flex !important; opacity: 1; }
         .modal-content-active { transform: scale(1) !important; opacity: 1 !important; }
 
-        .light-blur { backdrop-filter: blur(4px); background: rgba(15, 23, 42, 0.4); }
+        .light-blur { backdrop-filter: blur(8px); background: rgba(2, 6, 23, 0.6); }
 
         .htmx-indicator { display: none; }
         .htmx-request .htmx-indicator { display: inline-block; }
     </style>
 </head>
-<body class="bg-[#f8fafc] font-sans text-slate-800 antialiased" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body class="bg-[#f8fafc] dark:bg-[#020617] font-sans text-slate-800 dark:text-slate-300 antialiased transition-colors duration-300" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
     <nav class="h-16 nav-modern-light flex items-center justify-between px-10 sticky top-0 z-[100]" x-data="{ profileOpen: false }">
         <div class="flex items-center space-x-12">
@@ -41,7 +59,7 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-sm font-black tracking-tight text-slate-900 leading-none">Hangarin</span>
+                    <span class="text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 leading-none">Hangarin</span>
                     <span class="text-[9px] font-bold text-[#00c875] uppercase tracking-widest mt-1">Workspace</span>
                 </div>
             </div>
@@ -50,26 +68,31 @@
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
                 <input type="text" name="q" placeholder="Search tasks..." 
                     hx-get="{% url 'core:task_list' %}" hx-trigger="keyup changed delay:300ms" hx-target="#task-table-body"
-                    class="bg-slate-100/50 border border-slate-200 rounded-xl px-11 py-2 text-[12px] w-72 focus:w-80 focus:bg-white focus:ring-2 focus:ring-[#00c875]/10 focus:border-[#00c875] transition-all outline-none font-medium placeholder:text-slate-400">
+                    class="bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-11 py-2 text-[12px] w-72 focus:w-80 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#00c875]/10 focus:border-[#00c875] transition-all outline-none font-medium placeholder:text-slate-400 dark:text-slate-400">
             </div>
         </div>
         
         <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-1 mr-2 bg-slate-100/50 p-1 rounded-xl">
-                
+            <div class="flex items-center space-x-1 mr-2 bg-slate-100/50 dark:bg-slate-900/50 p-1 rounded-xl border border-transparent dark:border-slate-800">
+                <button @click="darkMode = !darkMode; localStorage.setItem('dark', darkMode)" 
+                        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 dark:text-amber-400 hover:bg-white dark:hover:bg-slate-800 transition-all">
+                    <i x-show="!darkMode" class="fa-solid fa-moon text-[15px]"></i>
+                    <i x-show="darkMode" class="fa-solid fa-sun text-[15px]" x-cloak></i>
+                </button>
+
                 <div class="relative" x-data="{ msgOpen: false }">
                     <button @click="msgOpen = !msgOpen" @click.away="msgOpen = false"
                             hx-get="{% url 'core:get_messages' %}" hx-target="#message-load-area" hx-trigger="click"
-                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-[#00c875] hover:bg-white transition-all relative">
+                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-[#00c875] dark:hover:text-[#00c875] hover:bg-white dark:hover:bg-slate-800 transition-all relative">
                         <i class="fa-solid fa-comment-dots text-[15px]"></i>
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full border-2 border-white"></span>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full border-2 border-white dark:border-[#0b0e14]"></span>
                     </button>
                     <div x-show="msgOpen" x-cloak
                          x-transition:enter="transition ease-out duration-150" 
                          x-transition:enter-start="transform opacity-0 translate-y-2" 
                          x-transition:enter-end="transform opacity-100 translate-y-0"
-                         class="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-200/50 py-2 z-[110] overflow-hidden">
-                        <div class="px-4 py-2 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                         class="absolute right-0 mt-3 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl shadow-slate-200/50 dark:shadow-black/60 py-2 z-[110] overflow-hidden">
+                        <div class="px-4 py-2 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
                             <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Recent Messages</span>
                         </div>
                         <div id="message-load-area" class="max-h-72 overflow-y-auto">
@@ -81,16 +104,16 @@
                 <div class="relative" x-data="{ notifOpen: false }">
                     <button @click="notifOpen = !notifOpen" @click.away="notifOpen = false"
                             hx-get="{% url 'core:get_notifications' %}" hx-target="#notif-load-area" hx-trigger="click"
-                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-[#00c875] hover:bg-white transition-all relative">
+                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-[#00c875] hover:bg-white dark:hover:bg-slate-800 transition-all relative">
                         <i class="fa-solid fa-bell text-[15px]"></i>
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#00c875] rounded-full border-2 border-white"></span>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#00c875] rounded-full border-2 border-white dark:border-[#0b0e14]"></span>
                     </button>
                     <div x-show="notifOpen" x-cloak
                          x-transition:enter="transition ease-out duration-150" 
                          x-transition:enter-start="transform opacity-0 translate-y-2" 
                          x-transition:enter-end="transform opacity-100 translate-y-0"
-                         class="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-200/50 py-2 z-[110] overflow-hidden">
-                        <div class="px-4 py-2 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                         class="absolute right-0 mt-3 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl shadow-slate-200/50 dark:shadow-black/60 py-2 z-[110] overflow-hidden">
+                        <div class="px-4 py-2 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
                             <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Alerts</span>
                         </div>
                         <div id="notif-load-area" class="max-h-72 overflow-y-auto">
@@ -100,14 +123,14 @@
                 </div>
             </div>
             
-            <div class="relative pl-4 border-l border-slate-200">
+            <div class="relative pl-4 border-l border-slate-200 dark:border-slate-800">
                 <button @click="profileOpen = !profileOpen" @click.away="profileOpen = false" 
-                        class="flex items-center space-x-3 group py-1 px-2 rounded-xl hover:bg-slate-100/80 transition-all">
+                        class="flex items-center space-x-3 group py-1 px-2 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-all">
                     <div class="text-right">
-                        <p class="text-[11px] font-black text-slate-900 leading-none">NX_User</p>
+                        <p class="text-[11px] font-black text-slate-900 dark:text-slate-100 leading-none">NX_User</p>
                         <p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Premium</p>
                     </div>
-                    <div class="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                    <div class="w-9 h-9 bg-slate-900 dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform border border-transparent dark:border-slate-700">
                         <span class="text-[11px] font-black text-[#00c875]">NX</span>
                     </div>
                 </button>
@@ -116,11 +139,11 @@
                      x-transition:enter="transition ease-out duration-150" 
                      x-transition:enter-start="transform opacity-0 translate-y-2" 
                      x-transition:enter-end="transform opacity-100 translate-y-0" 
-                     class="absolute right-0 mt-3 w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-200/50 py-2 z-[110]">
-                    <a href="#" class="flex items-center px-4 py-2.5 text-[12px] font-semibold text-slate-600 hover:bg-[#00c875]/5 hover:text-[#00c875] transition-all">
+                     class="absolute right-0 mt-3 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl shadow-slate-200/50 dark:shadow-black/60 py-2 z-[110]">
+                    <a href="#" class="flex items-center px-4 py-2.5 text-[12px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-[#00c875]/5 hover:text-[#00c875] transition-all">
                         <i class="fa-solid fa-circle-user mr-3 opacity-40"></i> Profile Details
                     </a>
-                    <a href="#" class="flex items-center px-4 py-2.5 text-[12px] font-semibold text-slate-600 hover:bg-[#00c875]/5 hover:text-[#00c875] transition-all">
+                    <a href="#" class="flex items-center px-4 py-2.5 text-[12px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-[#00c875]/5 hover:text-[#00c875] transition-all">
                         <i class="fa-solid fa-sliders mr-3 opacity-40"></i> Settings
                     </a>
                 </div>
@@ -128,11 +151,11 @@
         </div>
     </nav>
 
-    <div class="flex h-[calc(100vh-64px)]">
-        <aside class="w-72 monday-glass border-r border-slate-200 flex flex-col shrink-0">
+    <div class="flex h-[calc(100vh-64px)] overflow-hidden">
+        <aside class="w-72 monday-glass border-r border-slate-200 dark:border-slate-800/50 flex flex-col shrink-0 relative z-20">
             <div class="p-6 flex-1 overflow-y-auto">
                 <button hx-get="{% url 'core:task_list' %}" hx-target="#task-table-body" 
-                        class="w-full flex items-center justify-between p-4 mb-8 rounded-2xl bg-[#00c875] text-white shadow-xl shadow-green-500/20 hover:bg-[#00b469] transition-all">
+                        class="w-full flex items-center justify-between p-4 mb-8 rounded-2xl bg-[#00c875] text-white shadow-xl shadow-green-500/20 hover:bg-[#00b469] hover:shadow-green-500/40 transition-all">
                     <div class="flex items-center">
                         <i class="fa-solid fa-layer-group mr-3 text-xs"></i>
                         <span class="font-black text-[10px] uppercase tracking-widest">Main Board</span>
@@ -143,34 +166,34 @@
                     <div>
                         <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-[0.2em] px-2 border-l-2 border-[#00c875] ml-1">Workflow</p>
                         <ul class="space-y-1 text-[11px] font-bold uppercase tracking-wider">
-                            <li><button hx-get="{% url 'core:task_list' %}?status=Pending" hx-target="#task-table-body" class="w-full flex items-center p-3 rounded-xl hover:bg-slate-50 text-slate-500 hover:text-slate-900 transition-all text-left">
-                                <span class="w-2 h-2 rounded-full bg-slate-300 mr-4"></span> Pending
+                            <li><button hx-get="{% url 'core:task_list' %}?status=Pending" hx-target="#task-table-body" class="w-full flex items-center p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all text-left">
+                                <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 mr-4"></span> Pending
                             </button></li>
-                            <li><button hx-get="{% url 'core:task_list' %}?status=In Progress" hx-target="#task-table-body" class="w-full flex items-center p-3 rounded-xl hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-all text-left">
+                            <li><button hx-get="{% url 'core:task_list' %}?status=In Progress" hx-target="#task-table-body" class="w-full flex items-center p-3 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-500/10 text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-all text-left">
                                 <span class="w-2 h-2 rounded-full bg-amber-400 mr-4"></span> In Progress
                             </button></li>
-                            <li><button hx-get="{% url 'core:task_list' %}?status=Completed" hx-target="#task-table-body" class="w-full flex items-center p-3 rounded-xl hover:bg-green-50 text-slate-500 hover:text-[#00c875] transition-all text-left">
+                            <li><button hx-get="{% url 'core:task_list' %}?status=Completed" hx-target="#task-table-body" class="w-full flex items-center p-3 rounded-xl hover:bg-green-50 dark:hover:bg-green-500/10 text-slate-500 dark:text-slate-400 hover:text-[#00c875] transition-all text-left">
                                 <span class="w-2 h-2 rounded-full bg-[#00c875] mr-4"></span> Completed
                             </button></li>
                         </ul>
                     </div>
 
                     <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-[0.2em] px-2 border-l-2 border-slate-200 ml-1">Optimization</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-[0.2em] px-2 border-l-2 border-slate-200 dark:border-slate-800 ml-1">Optimization</p>
                         <button hx-get="{% url 'core:task_list' %}?focus=true" hx-target="#task-table-body" 
-                                class="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-xl hover:shadow-green-500/10 transition-all active:scale-95">
+                                class="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-slate-800 to-slate-950 dark:from-slate-800 dark:to-slate-900 text-white shadow-xl hover:shadow-green-500/10 transition-all active:scale-95 border border-slate-700/50">
                             <span class="font-black text-[10px] uppercase tracking-[0.2em]">Focus Mode</span>
                             <i class="fa-solid fa-bolt text-[#00c875] animate-pulse"></i>
                         </button>
                     </div>
 
                     <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-[0.2em] px-2 border-l-2 border-slate-200 ml-1">Categories</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-[0.2em] px-2 border-l-2 border-slate-200 dark:border-slate-800 ml-1">Categories</p>
                         <ul class="space-y-1">
                             {% for category in categories %}
                             <li>
                                 <button hx-get="{% url 'core:task_list' %}?category={{ category.name }}" hx-target="#task-table-body" 
-                                        class="w-full flex items-center p-2.5 rounded-xl hover:bg-white text-slate-500 hover:text-slate-900 transition-all text-left text-[10px] font-bold uppercase tracking-widest">
+                                        class="w-full flex items-center p-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all text-left text-[10px] font-bold uppercase tracking-widest">
                                     <span class="w-2 h-2 rounded-full mr-3" style="background-color: {{ category.color }}"></span> {{ category.name }}
                                 </button>
                             </li>
@@ -180,25 +203,25 @@
                 </div>
             </div>
 
-            <div class="mt-auto p-6 bg-slate-50 border-t border-slate-100 space-y-4">
+            <div class="mt-auto p-6 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-800/60 space-y-4">
                 <div class="mb-4">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-3 tracking-[0.2em] px-2">Project Link</p>
                     <a href="https://github.com/NexieMadia23/Hangarin" target="_blank" rel="noopener noreferrer"
-                       class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl hover:border-[#00c875] hover:shadow-md transition-all group">
-                        <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center group-hover:bg-[#00c875] transition-colors">
+                       class="flex items-center gap-3 p-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl hover:border-[#00c875] hover:shadow-md transition-all group">
+                        <div class="w-8 h-8 rounded-lg bg-slate-900 dark:bg-slate-800 flex items-center justify-center group-hover:bg-[#00c875] transition-colors">
                             <i class="fa-brands fa-github text-white text-sm"></i>
                         </div>
-                        <span class="text-[9px] font-black text-slate-600 leading-tight uppercase tracking-tighter group-hover:text-slate-900">
+                        <span class="text-[9px] font-black text-slate-600 dark:text-slate-400 leading-tight uppercase tracking-tighter group-hover:text-slate-900 dark:group-hover:text-slate-100">
                             Click here to open <br> project in GitHub
                         </span>
                     </a>
                 </div>
 
-                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                <div class="bg-white dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div class="flex items-start gap-3">
                         <i class="fa-solid fa-lightbulb text-[#00c875] text-[10px] mt-0.5"></i>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider leading-relaxed">
-                            Click <span class="text-slate-900 font-black">Full Edit</span> to view notes & subtasks
+                        <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-relaxed">
+                            Click <span class="text-slate-900 dark:text-slate-200 font-black">Full Edit</span> to view notes & subtasks
                         </p>
                     </div>
                 </div>
@@ -207,18 +230,18 @@
                         <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Progress</span>
                         <span class="text-[10px] font-black text-[#00c875]">{{ progress|default:0 }}%</span>
                     </div>
-                    <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                         <div class="bg-[#00c875] h-full transition-all duration-1000" style="width: {{ progress|default:0 }}%"></div>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto bg-white flex flex-col">
-            <div class="px-10 py-10 flex justify-between items-end sticky top-0 bg-white/90 z-10 border-b border-slate-100 backdrop-blur-md">
+        <main class="flex-1 overflow-y-auto bg-white dark:bg-[#020617] flex flex-col transition-colors duration-300">
+            <div class="px-10 py-10 flex justify-between items-end sticky top-0 bg-white/90 dark:bg-[#020617]/90 z-10 border-b border-slate-100 dark:border-slate-800/50 backdrop-blur-md">
                 <div>
-                    <h2 class="text-4xl font-black text-slate-900 tracking-tight">Roadmap</h2>
-                    <p class="text-slate-400 text-sm font-medium italic">Project velocity tracking.</p>
+                    <h2 class="text-4xl font-black text-slate-900 dark:text-slate-50 tracking-tight">Roadmap</h2>
+                    <p class="text-slate-400 dark:text-slate-500 text-sm font-medium italic">Project velocity tracking.</p>
                 </div>
                 <button hx-get="{% url 'core:task_create' %}" hx-target="#modal-content" hx-swap="innerHTML"
                         class="bg-[#00c875] hover:bg-[#00b469] text-white px-10 py-4 rounded-2xl font-black shadow-2xl shadow-green-500/30 transition-all text-[11px] uppercase tracking-[0.2em] flex items-center gap-4">
@@ -227,17 +250,17 @@
             </div>
 
             <div class="p-10 pt-6">
-                <div class="border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/20">
+                <div class="border border-slate-200 dark:border-slate-800/80 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/20 dark:shadow-black/60 bg-white dark:bg-slate-900/20">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400 border-b border-slate-100 tracking-[0.2em]">
+                            <tr class="bg-slate-50/50 dark:bg-slate-800/40 text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800 tracking-[0.2em]">
                                 <th class="p-6 pl-10">Tasks</th>
                                 <th class="p-6 text-center w-48">Status</th>
                                 <th class="p-6 text-center w-40">Priority</th>
                                 <th class="p-6 w-44 text-right pr-12">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="task-table-body" class="divide-y divide-slate-100">
+                        <tbody id="task-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
                             {% include 'core/partials/task_rows.html' %}
                         </tbody>
                     </table>
