@@ -270,11 +270,9 @@
                 content.innerHTML = ""; 
             }, 300); 
         }
-        // Listen for HTMX swaps to open modal
         document.addEventListener('htmx:afterSwap', (e) => { 
             if (e.detail.target.id === "modal-content") openModal(); 
         });
-        // Listen for custom event from server to close modal
         document.body.addEventListener('taskListChanged', () => closeModal());
     </script>
 </body>
