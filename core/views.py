@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db.models import Q, Count
 from .models import Task, Category, SubTask, Note 
 from .forms import TaskForm
-
+from django.http import HttpResponse
 # --- Dashboard & Sidebar ---
 
 def task_list(request):
@@ -186,3 +186,42 @@ def add_note(request, task_pk):
     if content:
         Note.objects.create(task=task, content=content)
     return render(request, 'core/partials/note_section.html', {'task': task})
+
+def get_messages(request):
+    # Sample data - in a real app, you'd pull this from a model
+    samples = [
+        {"user": "Alice", "text": "Can you check the roadmap?", "time": "2m ago"},
+        {"user": "Bob", "text": "Budget files are uploaded.", "time": "1h ago"},
+        {"user": "Charlie", "text": "Meeting at 3 PM.", "time": "4h ago"},
+    ]
+    
+    html = ""
+    for msg in samples:
+        html += f'''
+        <div class="px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-0">
+            <div class="flex justify-between items-start mb-1">
+                <span class="text-[11px] font-black text-slate-900 uppercase tracking-tighter">{msg['user']}</span>
+                <span class="text-[9px] font-medium text-slate-400">{msg['time']}</span>
+            </div>
+            <p class="text-[11px] text-slate-500 line-clamp-1">{msg['text']}</p>
+        </div>
+        '''
+    return HttpResponse(html)
+
+def get_notifications(request):
+    # Sample data
+    samples = [
+        {"icon": "fa-check-circle", "color": "text-green-500", "text": "Task 'Homepage UI' completed"},
+        {"icon": "fa-exclamation-circle", "color": "text-amber-500", "text": "Deadline approaching: API Integration"},
+        {"icon": "fa-user-plus", "color": "text-blue-500", "text": "New team member joined"},
+    ]
+    
+    html = ""
+    for n in samples:
+        html += f'''
+        <div class="px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-0 flex items-center gap-3">
+            <i class="fa-solid {n['icon']} {n['color']} text-[12px]"></i>
+            <p class="text-[11px] font-medium text-slate-600 tracking-tight">{n['text']}</p>
+        </div>
+        '''
+    return HttpResponse(html)

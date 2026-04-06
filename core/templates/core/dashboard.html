@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <title>Hangarin | Dashboard</title>
     <style>
+        [x-cloak] { display: none !important; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f8fafc; }
         ::-webkit-scrollbar-thumb { background: #00c875; border-radius: 10px; }
@@ -33,7 +34,7 @@
 </head>
 <body class="bg-[#f8fafc] font-sans text-slate-800 antialiased" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
-    <nav class="h-16 nav-modern-light flex items-center justify-between px-10 sticky top-0 z-[100]" x-data="{ open: false }">
+    <nav class="h-16 nav-modern-light flex items-center justify-between px-10 sticky top-0 z-[100]" x-data="{ profileOpen: false }">
         <div class="flex items-center space-x-12">
             <div class="flex items-center space-x-3">
                 <div class="bg-[#00c875] p-2 rounded-xl shadow-lg shadow-green-500/30">
@@ -55,18 +56,52 @@
         
         <div class="flex items-center space-x-4">
             <div class="flex items-center space-x-1 mr-2 bg-slate-100/50 p-1 rounded-xl">
-                <button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-[#00c875] hover:bg-white transition-all relative">
-                    <i class="fa-solid fa-comment-dots text-[15px]"></i>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full border-2 border-white"></span>
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-[#00c875] hover:bg-white transition-all relative">
-                    <i class="fa-solid fa-bell text-[15px]"></i>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#00c875] rounded-full border-2 border-white"></span>
-                </button>
+                
+                <div class="relative" x-data="{ msgOpen: false }">
+                    <button @click="msgOpen = !msgOpen" @click.away="msgOpen = false"
+                            hx-get="{% url 'core:get_messages' %}" hx-target="#message-load-area" hx-trigger="click"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-[#00c875] hover:bg-white transition-all relative">
+                        <i class="fa-solid fa-comment-dots text-[15px]"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    <div x-show="msgOpen" x-cloak
+                         x-transition:enter="transition ease-out duration-150" 
+                         x-transition:enter-start="transform opacity-0 translate-y-2" 
+                         x-transition:enter-end="transform opacity-100 translate-y-0"
+                         class="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-200/50 py-2 z-[110] overflow-hidden">
+                        <div class="px-4 py-2 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Recent Messages</span>
+                        </div>
+                        <div id="message-load-area" class="max-h-72 overflow-y-auto">
+                            <div class="p-4 text-center"><i class="fas fa-circle-notch fa-spin text-[#00c875]"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative" x-data="{ notifOpen: false }">
+                    <button @click="notifOpen = !notifOpen" @click.away="notifOpen = false"
+                            hx-get="{% url 'core:get_notifications' %}" hx-target="#notif-load-area" hx-trigger="click"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-[#00c875] hover:bg-white transition-all relative">
+                        <i class="fa-solid fa-bell text-[15px]"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#00c875] rounded-full border-2 border-white"></span>
+                    </button>
+                    <div x-show="notifOpen" x-cloak
+                         x-transition:enter="transition ease-out duration-150" 
+                         x-transition:enter-start="transform opacity-0 translate-y-2" 
+                         x-transition:enter-end="transform opacity-100 translate-y-0"
+                         class="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-200/50 py-2 z-[110] overflow-hidden">
+                        <div class="px-4 py-2 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Alerts</span>
+                        </div>
+                        <div id="notif-load-area" class="max-h-72 overflow-y-auto">
+                            <div class="p-4 text-center"><i class="fas fa-circle-notch fa-spin text-[#00c875]"></i></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="relative pl-4 border-l border-slate-200">
-                <button @click="open = !open" @click.away="open = false" 
+                <button @click="profileOpen = !profileOpen" @click.away="profileOpen = false" 
                         class="flex items-center space-x-3 group py-1 px-2 rounded-xl hover:bg-slate-100/80 transition-all">
                     <div class="text-right">
                         <p class="text-[11px] font-black text-slate-900 leading-none">NX_User</p>
@@ -77,7 +112,7 @@
                     </div>
                 </button>
 
-                <div x-show="open" 
+                <div x-show="profileOpen" x-cloak
                      x-transition:enter="transition ease-out duration-150" 
                      x-transition:enter-start="transform opacity-0 translate-y-2" 
                      x-transition:enter-end="transform opacity-100 translate-y-0" 
@@ -169,7 +204,7 @@
                 </div>
                 <div id="progress-container">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Velocity</span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Progress</span>
                         <span class="text-[10px] font-black text-[#00c875]">{{ progress|default:0 }}%</span>
                     </div>
                     <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
@@ -219,14 +254,27 @@
         const modal = document.getElementById('modal');
         const content = document.getElementById('modal-content');
         function openModal() { 
-            modal.classList.add('modal-show'); modal.classList.remove('hidden'); 
-            setTimeout(() => { modal.classList.add('opacity-100'); content.classList.add('modal-content-active'); }, 10); 
+            modal.classList.add('modal-show'); 
+            modal.classList.remove('hidden'); 
+            setTimeout(() => { 
+                modal.classList.add('opacity-100'); 
+                content.classList.add('modal-content-active'); 
+            }, 10); 
         }
         function closeModal() { 
-            content.classList.remove('modal-content-active'); modal.classList.remove('opacity-100');
-            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('modal-show'); content.innerHTML = ""; }, 300); 
+            content.classList.remove('modal-content-active'); 
+            modal.classList.remove('opacity-100');
+            setTimeout(() => { 
+                modal.classList.add('hidden'); 
+                modal.classList.remove('modal-show'); 
+                content.innerHTML = ""; 
+            }, 300); 
         }
-        document.addEventListener('htmx:afterSwap', (e) => { if (e.detail.target.id === "modal-content") openModal(); });
+        // Listen for HTMX swaps to open modal
+        document.addEventListener('htmx:afterSwap', (e) => { 
+            if (e.detail.target.id === "modal-content") openModal(); 
+        });
+        // Listen for custom event from server to close modal
         document.body.addEventListener('taskListChanged', () => closeModal());
     </script>
 </body>
