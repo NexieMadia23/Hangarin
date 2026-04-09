@@ -50,7 +50,15 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Required for allauth
-SITE_ID = 1
+import socket
+
+hostname = socket.gethostname()
+
+# Logic to choose the correct Site ID
+if "Nexy" in hostname: 
+    SITE_ID = 2  # This matches Nexy.pythonanywhere.com
+else:
+    SITE_ID = 1  # This matches 127.0.0.1:8000
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -69,7 +77,8 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], 
+        # Update this line below:
+        'DIRS': [BASE_DIR / 'core' / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,6 +89,17 @@ TEMPLATES = [
         },
     },
 ]
+
+
+
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.DEBUG: 'slate-500',
+    messages.INFO: 'brand',
+    messages.SUCCESS: 'brand',
+    messages.WARNING: 'amber-500',
+    messages.ERROR: 'red-500',
+}
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
@@ -110,6 +130,9 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none' 
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_LOGOUT_ON_GET = True # Log out instantly on link click
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
 
 # Social Account Providers Configuration
 SOCIALACCOUNT_PROVIDERS = {

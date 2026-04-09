@@ -13,3 +13,9 @@ staticfiles/
 venv/
 env/
 .venv/
+
+venv/
+*.pyc
+db.sqlite3
+.env
+staticfiles/
