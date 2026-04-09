@@ -10,4 +10,6 @@ urlpatterns = [
     
     # Your main app
     path('', include('core.urls')), 
+
+    path('', include('pwa.urls')),
 ]

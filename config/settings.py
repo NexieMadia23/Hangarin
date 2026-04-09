@@ -42,7 +42,32 @@ INSTALLED_APPS = [
     # Social Providers
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
+    'pwa',
+    'core',
 ]
+# --- PWA Settings ---
+PWA_APP_NAME = 'Hangarin'
+PWA_APP_DESCRIPTION = "Your Minimalist Workspace"
+PWA_APP_THEME_COLOR = '#00c875'  # Mint Green
+PWA_APP_BACKGROUND_COLOR = '#0f172a' # Dark Slate
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_ORIENTATION = 'portrait'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+
+# Icons (Make sure these files exist in static/images/)
+PWA_APP_ICONS = [
+    {'src': '/static/images/icon-192.png', 'sizes': '192x192'},
+    {'src': '/static/images/icon-512.png', 'sizes': '512x512'}
+]
+PWA_APP_ICONS_APPLE = [
+    {'src': '/static/images/icon-192.png', 'sizes': '192x192'}
+]
+
+# Path to the service worker file
+import os
+PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'core/static/js', 'serviceworker.js')
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -132,7 +157,9 @@ ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_LOGOUT_ON_GET = True # Log out instantly on link click
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
-
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
+# This tells allauth to skip the intermediate signup form if the social provider gives enough info
+SOCIALACCOUNT_AUTO_SIGNUP = True
 
 # Social Account Providers Configuration
 SOCIALACCOUNT_PROVIDERS = {
