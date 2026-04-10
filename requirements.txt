@@ -3,7 +3,7 @@ certifi==2026.2.25
 cffi==2.0.0
 charset-normalizer==3.4.5
 cryptography==46.0.5
-Django==6.0.2
+Django==5.1.7
 django-allauth==65.14.3
 django-htmx==1.27.0
 django-pwa==2.0.1
