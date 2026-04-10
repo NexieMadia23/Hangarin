@@ -1,0 +1,26 @@
+<tr id="task-{{ task.id }}" class="bg-indigo-50/50">
+    <td colspan="4" class="p-4">
+        <form hx-post="{% url 'core:task_edit' task.pk %}?inline=true" 
+              hx-target="#task-{{ task.id }}" 
+              hx-swap="outerHTML" 
+              class="flex items-center gap-4">
+            {% csrf_token %}
+            <input type="text" name="title" value="{{ task.title }}" 
+                   class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none font-bold">
+            
+            <select name="status" class="px-3 py-2 border rounded-lg text-xs font-black uppercase tracking-widest">
+                <option value="Pending" {% if task.status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Completed</option>
+            </select>
+
+            <div class="flex gap-2">
+                <button type="submit" class="bg-[#00c875] text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase">Save</button>
+                <button hx-get="{% url 'core:task_list' %}?id={{ task.id }}" 
+                        hx-target="#task-{{ task.id }}" 
+                        hx-swap="outerHTML"
+                        class="bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase">Cancel</button>
+            </div>
+        </form>
+    </td>
+</tr>

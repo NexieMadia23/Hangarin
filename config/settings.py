@@ -1,9 +1,11 @@
 """
 Django settings for config project.
-Updated for Hangarin Workspace with Social Auth & Instant Logout.
+Updated for Hangarin Workspace with Social Auth, Instant Logout, and One-Click Login.
 """
 
 from pathlib import Path
+import os
+import socket
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,8 +45,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
     'pwa',
-    'core',
 ]
+
 # --- PWA Settings ---
 PWA_APP_NAME = 'Hangarin'
 PWA_APP_DESCRIPTION = "Your Minimalist Workspace"
@@ -56,7 +58,6 @@ PWA_APP_ORIENTATION = 'portrait'
 PWA_APP_START_URL = '/'
 PWA_APP_STATUS_BAR_COLOR = 'default'
 
-# Icons (Make sure these files exist in static/images/)
 PWA_APP_ICONS = [
     {'src': '/static/images/icon-192.png', 'sizes': '192x192'},
     {'src': '/static/images/icon-512.png', 'sizes': '512x512'}
@@ -65,8 +66,6 @@ PWA_APP_ICONS_APPLE = [
     {'src': '/static/images/icon-192.png', 'sizes': '192x192'}
 ]
 
-# Path to the service worker file
-import os
 PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'core/static/js', 'serviceworker.js')
 
 AUTHENTICATION_BACKENDS = [
@@ -74,16 +73,12 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# Required for allauth
-import socket
-
-hostname = socket.gethostname()
-
 # Logic to choose the correct Site ID
+hostname = socket.gethostname()
 if "Nexy" in hostname: 
-    SITE_ID = 2  # This matches Nexy.pythonanywhere.com
+    SITE_ID = 2  # Nexy.pythonanywhere.com
 else:
-    SITE_ID = 1  # This matches 127.0.0.1:8000
+    SITE_ID = 1  # 127.0.0.1:8000
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -102,7 +97,6 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # Update this line below:
         'DIRS': [BASE_DIR / 'core' / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
@@ -114,8 +108,6 @@ TEMPLATES = [
         },
     },
 ]
-
-
 
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
@@ -145,23 +137,27 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Auth Redirection & URLs
-LOGIN_URL = '/accounts/login/' # Default allauth login path
+LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Allauth Configuration
+# --- Allauth & Social Auth Configuration ---
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none' 
 ACCOUNT_SESSION_REMEMBER = True
-ACCOUNT_LOGOUT_ON_GET = True # Log out instantly on link click
+ACCOUNT_LOGOUT_ON_GET = True 
 
+# SOCIAL LOGIN ONE-CLICK FIXES
 SOCIALACCOUNT_LOGIN_ON_GET = True
-SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
-# This tells allauth to skip the intermediate signup form if the social provider gives enough info
-SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_AUTO_SIGNUP = True  # Skips the extra signup form
+SOCIALACCOUNT_QUERY_EMAIL = True
 
-# Social Account Providers Configuration
+# THIS SECTION FIXES THE "ACCOUNT ALREADY EXISTS" CONFLICT
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': ['profile', 'email'],

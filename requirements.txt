@@ -6,6 +6,7 @@ cryptography==46.0.5
 Django==6.0.2
 django-allauth==65.14.3
 django-htmx==1.27.0
+django-pwa==2.0.1
 django-widget-tweaks==1.5.1
 Faker==40.4.0
 idna==3.11

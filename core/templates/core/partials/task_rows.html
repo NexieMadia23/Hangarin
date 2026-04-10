@@ -1,6 +1,7 @@
 {% for task in tasks %}
 <tr class="task-row group hover:bg-slate-50/80 transition-all border-b border-slate-100 bg-white" 
-    id="task-{{ task.id }}">
+    id="task-{{ task.id }}"
+    {% if is_single %} hx-get="{% url 'core:task_list' %}?id={{ task.id }}" hx-trigger="taskListChanged from:body" hx-swap="outerHTML" {% endif %}>
     
     <td class="p-4 border-l-[6px] align-middle border-r border-slate-50 cursor-pointer
         {% if task.status == 'Completed' %} border-l-[#00c875] 
@@ -47,6 +48,7 @@
         <button hx-post="{% url 'core:toggle_status' task.pk %}" 
                 hx-target="#task-{{ task.id }}" 
                 hx-swap="outerHTML"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                 class="h-9 w-36 inline-flex items-center justify-center px-4 rounded-md text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm text-white
                 {% if task.status == 'Completed' %} bg-[#00c875] hover:bg-[#00ae65] shadow-[0_0_15px_rgba(0,200,117,0.2)]
                 {% elif task.status == 'In Progress' %} bg-[#fdab3d] hover:bg-[#e69b37]
@@ -90,7 +92,8 @@
             <button hx-delete="{% url 'core:task_delete' task.pk %}" 
                     hx-confirm="Delete this task?" 
                     hx-target="#task-{{ task.id }}" 
-                    hx-swap="outerHTML"
+                    hx-swap="delete"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                     class="h-9 px-4 inline-flex items-center border-2 border-slate-200 bg-white text-slate-500 text-[11px] font-black uppercase rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-all">
                 <i class="fa-solid fa-trash"></i>
             </button>
@@ -111,7 +114,7 @@
     {% endif %}
 {% endfor %}
 
-{# --- NUMBERED PAGINATION CONTROLS --- #}
+{# Pagination logic remains unchanged #}
 {% if not is_single and tasks.has_other_pages %}
 <tr id="pagination-row">
     <td colspan="4" class="p-6 bg-slate-50/50">

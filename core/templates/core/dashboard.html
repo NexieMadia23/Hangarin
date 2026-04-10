@@ -67,7 +67,7 @@
             
             <div class="relative group hidden lg:block">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
-                <input type="text" name="q" placeholder="Search tasks..." 
+                <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Search tasks..." 
                     hx-get="{% url 'core:task_list' %}" hx-trigger="keyup changed delay:300ms" hx-target="#task-table-body"
                     class="bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-11 py-2 text-[12px] w-72 focus:w-80 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#00c875]/10 focus:border-[#00c875] transition-all outline-none font-medium placeholder:text-slate-400 dark:text-slate-400">
             </div>
@@ -199,7 +199,9 @@
                             <li>
                                 <button hx-get="{% url 'core:task_list' %}?category={{ category.name }}" hx-target="#task-table-body" 
                                         class="w-full flex items-center p-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all text-left text-[10px] font-bold uppercase tracking-widest">
-                                    <span class="w-2 h-2 rounded-full mr-3" style="background-color: {{ category.color }}"></span> {{ category.name }}
+                                    <span class="w-2 h-2 rounded-full mr-3" style="background-color: {{ category.color }}"></span> 
+                                    {{ category.name }} 
+                                    <span class="ml-auto opacity-40 text-[8px]">{{ category.task_count }}</span>
                                 </button>
                             </li>
                             {% endfor %}
@@ -230,7 +232,11 @@
                         </p>
                     </div>
                 </div>
-                <div id="progress-container">
+                
+                <div id="progress-container" 
+                     hx-get="{% url 'core:task_list' %}" 
+                     hx-trigger="taskListChanged from:body" 
+                     hx-select="#progress-container">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Progress</span>
                         <span class="text-[10px] font-black text-[#00c875]">{{ progress|default:0 }}%</span>
@@ -265,8 +271,17 @@
                                 <th class="p-6 w-44 text-right pr-12">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="task-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
-                            {% include 'core/partials/task_rows.html' %}
+                        <tbody id="task-table-body" 
+                            class="divide-y divide-slate-100 dark:divide-slate-800/60"
+                            hx-get="{% url 'core:task_list' %}" 
+                            hx-trigger="load once, taskListChanged from:body"
+                            hx-target="this"
+                            hx-swap="innerHTML">
+                            <tr>
+                                <td colspan="4" class="py-20 text-center">
+                                    <i class="fas fa-circle-notch fa-spin text-[#00c875] text-2xl"></i>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -275,60 +290,6 @@
     </div>
 
     {% else %}
-    <div class="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-[#020617] px-6">
-        <div class="w-full max-w-md p-8 monday-glass rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl">
-            <div class="flex flex-col items-center mb-8">
-                <div class="bg-[#00c875] p-4 rounded-2xl shadow-xl shadow-green-500/30 mb-4">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-                </div>
-                <h1 class="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-none">Hangarin</h1>
-                <p class="text-[#00c875] text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Workspace Identity</p>
-            </div>
-
-            <div class="space-y-5">
-                <form action="{% url 'account_login' %}" method="POST" class="space-y-4">
-                    {% csrf_token %}
-                    <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Credentials</label>
-                        <input type="text" name="login" placeholder="Email or Username" required
-                            class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 mt-1 focus:ring-4 focus:ring-[#00c875]/10 focus:border-[#00c875] outline-none transition-all font-medium text-sm">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Security</label>
-                        <input type="password" name="password" placeholder="••••••••" required
-                            class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 mt-1 focus:ring-4 focus:ring-[#00c875]/10 focus:border-[#00c875] outline-none transition-all font-medium text-sm">
-                    </div>
-                    <button type="submit" class="w-full bg-[#00c875] hover:bg-[#00b469] text-white py-4 rounded-2xl font-black shadow-xl shadow-green-500/20 transition-all text-[11px] uppercase tracking-[0.2em]">
-                        Enter Workspace
-                    </button>
-                </form>
-
-                <div class="flex items-center my-6">
-                    <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-                    <span class="px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Or Secure Login</span>
-                    <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <a href="{% provider_login_url 'google' %}" class="flex items-center justify-center gap-3 py-3 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:border-[#00c875] hover:shadow-md transition-all group">
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google">
-                        <span class="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-tighter">Google</span>
-                    </a>
-                    
-                    <a href="{% provider_login_url 'github' %}" class="flex items-center justify-center gap-3 py-3 px-4 bg-slate-900 text-white rounded-xl hover:bg-black hover:shadow-lg transition-all group border border-slate-700">
-                        <i class="fa-brands fa-github text-sm"></i>
-                        <span class="text-[10px] font-black uppercase tracking-tighter">GitHub</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">
-                    New here? <a href="{% url 'account_signup' %}" class="text-[#00c875] hover:underline">Create Account</a>
-                </p>
-            </div>
-        </div>
-    </div>
     {% endif %}
 
     <div id="modal" class="fixed inset-0 hidden items-center justify-center z-[200] light-blur opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeModal()">
