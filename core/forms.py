@@ -4,6 +4,7 @@ from .models import Task, Category, Priority
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
+        # Ensure 'user' is EXCLUDED here so it doesn't show up in the form
         fields = ['title', 'description', 'status', 'priority', 'category', 'deadline']
         widgets = {
             'title': forms.TextInput(attrs={
@@ -23,7 +24,7 @@ class TaskForm(forms.ModelForm):
                     'type': 'datetime-local',
                     'class': 'w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#00c875]/20 outline-none font-medium'
                 },
-                format='%Y-%m-%dT%H:%M' # Crucial for 'datetime-local' to display existing data
+                format='%Y-%m-%dT%H:%M'
             ),
             'priority': forms.Select(attrs={
                 'class': 'w-full p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-[#00c875] outline-none cursor-pointer'
@@ -34,22 +35,23 @@ class TaskForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # We pop the user out of the kwargs so we can filter the dropdowns
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # 1. Sync choices directly from the Model
         self.fields['status'].choices = Task.STATUS_CHOICES
         self.fields['status'].empty_label = None
         
-        # 2. Standardize Category and Priority
+        # 1. Filter Category to only show global ones OR user-specific ones
+        # If your Category model doesn't have a 'user' field yet, leave this as .all()
         self.fields['category'].queryset = Category.objects.all()
         self.fields['priority'].queryset = Priority.objects.all()
+        
         self.fields['category'].empty_label = "Select Category"
         self.fields['priority'].empty_label = "Select Priority"
         
-        # 3. Form formatting for existing deadlines (Edit Mode)
         if self.instance and self.instance.deadline:
             self.initial['deadline'] = self.instance.deadline.strftime('%Y-%m-%dT%H:%M')
 
-        # 4. Enforce 'Pending' as the initial state for all New Tasks
         if not self.instance.pk:
             self.initial['status'] = 'Pending'

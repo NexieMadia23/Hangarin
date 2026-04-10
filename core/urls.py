@@ -5,15 +5,15 @@ app_name = 'core'
 
 urlpatterns = [
     # --- Main Dashboard & Task CRUD ---
-    path('', views.task_list, name='task_list'), 
+    path('', views.task_list, name='task_list'),
     path('task/create/', views.task_create, name='task_create'),
-    
+
     # This handles both the "Inline Quick Edit" (?inline=true) and the "Full Edit" modal
     path('task/<int:pk>/edit/', views.task_edit, name='task_edit'),
-    
+
     path('task/<int:pk>/delete/', views.task_delete, name='task_delete'),
     path('task/<int:pk>/toggle/', views.toggle_status, name='toggle_status'),
-    
+
     # --- Sidebar Detail View ---
     path('task/<int:pk>/sidebar/', views.task_detail_sidebar, name='task_detail_sidebar'),
 
@@ -34,3 +34,5 @@ urlpatterns = [
 # ... other paths ...
 path('messages/', views.get_messages, name='get_messages'),
 path('notifications/', views.get_notifications, name='get_notifications'),
+# In core/urls.py, ensure it looks like this:
+path('subtask/<int:pk>/delete/', views.delete_subtask, name='delete_subtask'),
